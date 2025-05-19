@@ -128,7 +128,7 @@ export function VoucherViewer({ voucherData, onClose }: VoucherViewerProps) {
           {voucherData.details && (
             <div className="mb-6">
               <h3 className="font-bold text-lg mb-3 text-[#2a4d7f]">Informazioni Aggiuntive</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-lg whitespace-pre-line">
                 <p>{voucherData.details}</p>
               </div>
             </div>

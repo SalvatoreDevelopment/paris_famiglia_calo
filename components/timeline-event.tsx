@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ChevronDown, ChevronUp, Map, FileText } from "lucide-react"
+import { ChevronDown, ChevronUp, Map, FileText, ExternalLink } from "lucide-react"
 
 type TimelineEventProps = {
   time: string
@@ -8,7 +8,7 @@ type TimelineEventProps = {
   description: string
   voucher?: {
     text: string
-    url: string
+    url?: string
     handleVoucher?: () => void
     details?: string
     meetingPoint?: string
@@ -57,10 +57,21 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
                   <FileText className="mr-1 h-4 w-4" /> Visualizza Voucher
                 </button>
               )}
+
+              {voucher.url && voucher.url !== "#" && (
+                <a
+                  href={voucher.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-3 py-1.5 bg-[#2a4d7f] text-white rounded-lg text-sm font-medium hover:bg-[#2a4d7f]/90 transition-colors"
+                >
+                  <ExternalLink className="mr-1 h-4 w-4" /> Apri PDF
+                </a>
+              )}
             </div>
 
             {showDetails && (
-              <div className="mt-2 p-3 bg-[#f5f0e6] rounded-lg text-sm">
+              <div className="mt-2 p-3 bg-[#f5f0e6] rounded-lg text-sm whitespace-pre-line">
                 {voucher.meetingPoint && (
                   <p className="mb-1">
                     <span className="font-semibold">Punto d'incontro:</span> {voucher.meetingPoint}
@@ -72,9 +83,10 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
                   </p>
                 )}
                 {voucher.details && (
-                  <p className="mb-1">
-                    <span className="font-semibold">Dettagli:</span> {voucher.details}
-                  </p>
+                  <div className="mb-1">
+                    <span className="font-semibold">Dettagli:</span>
+                    <div className="mt-1">{voucher.details}</div>
+                  </div>
                 )}
               </div>
             )}

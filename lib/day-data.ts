@@ -7,7 +7,7 @@ export function getDayData() {
         description: "Partenza da Brindisi (BDS) con volo per Parigi Beauvais",
         voucher: {
           text: "Info Volo",
-          url: "#",
+          url: "/pdfs/volo-andata.pdf",
           details:
             "Ryanair FR1234. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
         },
@@ -33,11 +33,31 @@ export function getDayData() {
         description: "Arrivo e check-in presso Campanile Hotel Paris Bercy Village",
         voucher: {
           text: "Voucher Hotel",
-          url: "#",
+          url: "/pdfs/hotel-campanile.pdf",
           imageUrl: "/hotel-campanile-bercy-village-confirmation.png",
           title: "Hotel Campanile Paris Bercy Village",
-          details:
-            "Hotel Campanile Paris Bercy Village, 17 Rue Baron Le Roy, 75012 Paris. Tel: 33144677575. Prima colazione inclusa.",
+          details: `Elios Tours
+0832311077
+sergio.mandurino@eliostours.it
+Reservation 34111277 made on 28.04.25
+
+Campanile Hotel Paris Bercy Village
+75012, 17 Rue Baron Le Roy, Paris
+33144677575
+
+Check-in: 21.05.2025, from 14:00:00
+Check-out: 24.05.2025, until 12:00:00
+
+Double room (full double bed), for 2 adults
+Bedding: Double bed
+Guests: Vincenzo Calo, Addolorata Martella
+
+Meal type: Breakfast included
+
+Not included: City tax: 33 EUR
+
+GPS: 48.83517 2.387617`,
+          meetingPoint: "17 Rue Baron Le Roy, 75012 Paris",
           arrivalTime: "Check-in dalle 14:00, Check-out entro le 12:00 del 24/05",
         },
       },
@@ -58,7 +78,7 @@ export function getDayData() {
         description: "Free Tour Misteri e Leggende di Parigi (fino alle 20:00)",
         voucher: {
           text: "Voucher Free Tour Misteri",
-          url: "#",
+          url: "/pdfs/free-tour-misteri.pdf",
           imageUrl: "/paris-mystery-voucher.png",
           title: "Free Tour Misteri e Leggende di Parigi",
           meetingPoint: "Uscita della metro Cité",
@@ -94,7 +114,7 @@ export function getDayData() {
         description: "Free Tour Montmartre (fino alle 13:00)",
         voucher: {
           text: "Voucher Free Tour Montmartre",
-          url: "#",
+          url: "/pdfs/free-tour-montmartre.pdf",
           imageUrl: "/placeholder-k285k.png",
           title: "Free Tour di Montmartre",
           meetingPoint: "Place Blanche, davanti al ristorante FIVE GUYS",
@@ -118,7 +138,7 @@ export function getDayData() {
         description: "Visita al Museo del Louvre (fino alle 16:00)",
         voucher: {
           text: "Biglietti Louvre",
-          url: "#",
+          url: "/pdfs/louvre.pdf",
           imageUrl: "/placeholder-wrbr2.png",
           title: "Biglietti Museo del Louvre",
           meetingPoint: "Entrée Carrousel o Pyramide",
@@ -153,8 +173,8 @@ export function getDayData() {
         description: "Visita al Quartiere Latino",
         voucher: {
           text: "Voucher Free Tour Quartiere Latino",
-          url: "#",
-          imageUrl: "/placeholder.svg?height=1100&width=800&query=Latin Quarter Free Tour voucher with QR code",
+          url: "/pdfs/free-tour-quartiere-latino.pdf",
+          imageUrl: "/latin-quarter-voucher.png",
           title: "Free Tour del Quartiere Latino",
           meetingPoint: "Fontana di Saint-Michel, Place Saint Michel",
           arrivalTime: "Arrivare 15 minuti prima",
@@ -172,9 +192,8 @@ export function getDayData() {
         description: "Visita alla Torre Eiffel",
         voucher: {
           text: "Voucher Free Tour Torre Eiffel",
-          url: "#",
-          imageUrl:
-            "/placeholder.svg?height=1100&width=800&query=Eiffel Tower and Arc de Triomphe Free Tour voucher with QR code",
+          url: "/pdfs/free-tour-torre-eiffel.pdf",
+          imageUrl: "/eiffel-arc-free-tour-voucher.png",
           title: "Free Tour nei dintorni della Torre Eiffel e Arco di Trionfo",
           meetingPoint: "Av. des Champs-Élysées, 152, davanti al negozio MONTBLANC",
           arrivalTime: "Arrivare 10 minuti prima",
@@ -187,8 +206,8 @@ export function getDayData() {
         description: "Crociera sulla Senna",
         voucher: {
           text: "Voucher Crociera",
-          url: "#",
-          imageUrl: "/placeholder.svg?height=1100&width=800&query=Seine River Cruise voucher with QR code",
+          url: "/pdfs/crociera-senna.pdf",
+          imageUrl: "/seine-river-cruise-voucher.png",
           title: "Crociera sulla Senna",
           meetingPoint: "Bateaux Parisiens, Port de la Bourdonnais, 75007 Paris",
           arrivalTime: "Presentarsi 15 minuti prima",
@@ -238,7 +257,7 @@ export function getDayData() {
         description: "Volo Paris BVA → Brindisi",
         voucher: {
           text: "Info Volo",
-          url: "#",
+          url: "/pdfs/volo-ritorno.pdf",
           details:
             "Ryanair FR5678. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
         },
