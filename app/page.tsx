@@ -4,6 +4,7 @@ import { useState } from "react"
 import { DayCard } from "@/components/day-card"
 import { BottomNavbar } from "@/components/bottom-navbar"
 import { Notes } from "@/components/notes"
+import { SosButton } from "@/components/sos-button"
 import { getDayData } from "../lib/day-data"
 import { Info } from "lucide-react"
 
@@ -50,6 +51,10 @@ export default function Home() {
               <li className="flex items-start">
                 <span className="font-bold mr-2">•</span>
                 <span>Clicca su "Apri PDF voucher" per visualizzare i voucher delle attività</span>
+              </li>
+              <li className="flex items-start">
+                <span className="font-bold mr-2">•</span>
+                <span>In caso di emergenza, usa il pulsante rosso SOS in basso a destra</span>
               </li>
             </ul>
 
@@ -99,6 +104,9 @@ export default function Home() {
         {activeDay === "notes" && <Notes />}
         {activeDay === "all" && <Notes />}
       </section>
+
+      {/* SOS Button */}
+      <SosButton />
 
       {/* Bottom Navbar */}
       <BottomNavbar activeDay={activeDay} setActiveDay={setActiveDay} />
