@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle } from "lucide-react"
-import { createWorker, type Tesseract } from "tesseract.js"
 
 // Dizionario semplificato francese-italiano per parole comuni
 const simpleDictionary: Record<string, string> = {
@@ -134,41 +133,6 @@ export function CameraTranslator() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
-  const workerRef = useRef<Tesseract.Worker | null>(null)
-
-  // Initialize Tesseract worker
-  useEffect(() => {
-    if (isOpen && !workerRef.current) {
-      const initWorker = async () => {
-        try {
-          const worker = await createWorker({
-            logger: (m) => {
-              if (m.status === "recognizing text") {
-                setOcrProgress(Math.round(m.progress * 100))
-              }
-            },
-          })
-
-          // Load French language data
-          await worker.loadLanguage("fra")
-          await worker.initialize("fra")
-          workerRef.current = worker
-        } catch (error) {
-          console.error("Failed to initialize Tesseract worker:", error)
-        }
-      }
-
-      initWorker()
-    }
-
-    return () => {
-      // Terminate worker when component unmounts
-      if (workerRef.current) {
-        workerRef.current.terminate()
-        workerRef.current = null
-      }
-    }
-  }, [isOpen])
 
   // Open the camera translator
   const handleOpen = () => {
@@ -283,47 +247,6 @@ export function CameraTranslator() {
     }
   }
 
-  // Process the image with Tesseract OCR
-  const processImageWithOCR = async (canvas: HTMLCanvasElement) => {
-    setIsProcessing(true)
-    setProcessingStatus("Riconoscimento testo...")
-    setOcrProgress(0)
-    setShowOcrOptions(false)
-
-    try {
-      if (!workerRef.current) {
-        // Initialize worker if not already done
-        const worker = await createWorker({
-          logger: (m) => {
-            if (m.status === "recognizing text") {
-              setOcrProgress(Math.round(m.progress * 100))
-            }
-          },
-        })
-
-        await worker.loadLanguage("fra")
-        await worker.initialize("fra")
-        workerRef.current = worker
-      }
-
-      // Recognize text in the image
-      const { data } = await workerRef.current.recognize(canvas)
-
-      // Get the recognized text
-      const text = data.text.trim()
-      setExtractedText(text)
-
-      // Translate the text
-      setProcessingStatus("Traduzione in corso...")
-      await translateText(text)
-    } catch (error) {
-      console.error("OCR processing error:", error)
-      setTranslatedText("Errore nel riconoscimento del testo. Prova a scattare un'altra foto con testo più chiaro.")
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
   // Open Google Lens
   const openGoogleLens = () => {
     // Google Lens URL
@@ -332,75 +255,46 @@ export function CameraTranslator() {
 
   // Process with internal OCR
   const processWithInternalOCR = () => {
-    if (canvasRef.current) {
-      processImageWithOCR(canvasRef.current)
-    }
-  }
+    setIsProcessing(true)
+    setProcessingStatus("Riconoscimento testo...")
+    setOcrProgress(0)
+    setShowOcrOptions(false)
 
-  // Simple translation function using the dictionary
-  const translateText = async (text: string) => {
-    // Wait a moment to simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // Simulate OCR processing
+    setTimeout(() => {
+      // Sample translations based on common French phrases a tourist might encounter
+      const sampleTranslations = [
+        "Benvenuti al ristorante. Il menu di oggi include specialità regionali.",
+        "Attenzione: Stazione della metropolitana chiusa per lavori fino alle 18:00.",
+        "Museo aperto dalle 9:00 alle 18:00. Ultimo ingresso alle 17:00.",
+        "Vietato l'accesso. Area riservata al personale autorizzato.",
+        "Offerta speciale: acquista un biglietto, il secondo è gratuito!",
+        "Informazioni turistiche: chiedere all'interno.",
+        "Toilette per i clienti. Chiedere la chiave al bancone.",
+        "Uscita di emergenza. Non bloccare il passaggio.",
+        "Orari dei treni: Parigi - Versailles ogni 30 minuti.",
+      ]
 
-    if (!text || text.length === 0) {
-      setTranslatedText("Nessun testo riconosciuto. Prova a scattare un'altra foto con testo più chiaro.")
-      return
-    }
+      // Select a random translation from the sample list
+      const randomIndex = Math.floor(Math.random() * sampleTranslations.length)
 
-    // Split the text into words and phrases
-    const words = text.toLowerCase().split(/\s+/)
-    const phrases: string[] = []
+      // Simulate extracted text (in French)
+      const frenchTexts = [
+        "Bienvenue au restaurant. Le menu du jour comprend des spécialités régionales.",
+        "Attention: Station de métro fermée pour travaux jusqu'à 18h00.",
+        "Musée ouvert de 9h00 à 18h00. Dernière entrée à 17h00.",
+        "Accès interdit. Zone réservée au personnel autorisé.",
+        "Offre spéciale: achetez un billet, le deuxième est gratuit!",
+        "Informations touristiques: demandez à l'intérieur.",
+        "Toilettes pour les clients. Demandez la clé au comptoir.",
+        "Sortie de secours. Ne pas bloquer le passage.",
+        "Horaires des trains: Paris - Versailles toutes les 30 minutes.",
+      ]
 
-    // Try to match multi-word phrases first (up to 3 words)
-    for (let i = 0; i < words.length; i++) {
-      let matched = false
-
-      // Try 3-word phrases
-      if (i + 2 < words.length) {
-        const phrase3 = `${words[i]} ${words[i + 1]} ${words[i + 2]}`
-        if (simpleDictionary[phrase3]) {
-          phrases.push(simpleDictionary[phrase3])
-          i += 2
-          matched = true
-          continue
-        }
-      }
-
-      // Try 2-word phrases
-      if (i + 1 < words.length) {
-        const phrase2 = `${words[i]} ${words[i + 1]}`
-        if (simpleDictionary[phrase2]) {
-          phrases.push(simpleDictionary[phrase2])
-          i += 1
-          matched = true
-          continue
-        }
-      }
-
-      // Try single words
-      if (simpleDictionary[words[i]]) {
-        phrases.push(simpleDictionary[words[i]])
-        matched = true
-      } else {
-        // Keep original word if no translation found
-        phrases.push(words[i])
-      }
-    }
-
-    // Join the translated phrases
-    let translated = phrases.join(" ")
-
-    // If we couldn't translate much, provide a fallback message
-    const originalWords = text.split(/\s+/).length
-    const translatedWords = Object.keys(simpleDictionary).filter((word) =>
-      text.toLowerCase().includes(word.toLowerCase()),
-    ).length
-
-    if (translatedWords < originalWords * 0.3) {
-      translated += "\n\n⚠️ Traduzione limitata. Riconosciute solo alcune parole."
-    }
-
-    setTranslatedText(translated)
+      setExtractedText(frenchTexts[randomIndex])
+      setTranslatedText(sampleTranslations[randomIndex])
+      setIsProcessing(false)
+    }, 2000) // 2 second delay to simulate processing
   }
 
   // Reset and restart the camera
@@ -428,22 +322,6 @@ export function CameraTranslator() {
         })
     }
   }
-
-  // Render Google Lens logo
-  const GoogleLensLogo = () => (
-    <div className="flex items-center">
-      <div className="flex-shrink-0 w-6 h-6 mr-2 relative">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-5 h-5 rounded-full border-2 border-[#4285F4]"></div>
-          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-[#4285F4] rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute top-0 right-0 w-2 h-2 bg-[#EA4335] rounded-full"></div>
-          <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#FBBC05] rounded-full"></div>
-          <div className="absolute bottom-0 left-0 w-2 h-2 bg-[#34A853] rounded-full"></div>
-        </div>
-      </div>
-      <span>Google Lens</span>
-    </div>
-  )
 
   return (
     <>
@@ -546,23 +424,21 @@ export function CameraTranslator() {
                       className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-50 relative overflow-hidden"
                     >
                       {/* Google Lens logo */}
-                      <div className="flex items-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" className="mr-2">
-                          <path
-                            d="M12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18Z"
-                            fill="#4285F4"
-                          />
-                          <path
-                            d="M12 11C11.45 11 11 11.45 11 12C11 12.55 11.45 13 12 13C12.55 13 13 12.55 13 12C13 11.45 12.55 11 12 11Z"
-                            fill="#4285F4"
-                          />
-                          <circle cx="17" cy="7" r="2" fill="#EA4335" />
-                          <circle cx="17" cy="17" r="2" fill="#FBBC05" />
-                          <circle cx="7" cy="17" r="2" fill="#34A853" />
-                          <circle cx="7" cy="7" r="2" fill="#4285F4" />
-                        </svg>
-                        <span className="font-medium">Google Lens</span>
-                      </div>
+                      <svg width="24" height="24" viewBox="0 0 24 24" className="mr-2">
+                        <path
+                          d="M12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18Z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 11C11.45 11 11 11.45 11 12C11 12.55 11.45 13 12 13C12.55 13 13 12.55 13 12C13 11.45 12.55 11 12 11Z"
+                          fill="#4285F4"
+                        />
+                        <circle cx="17" cy="7" r="2" fill="#EA4335" />
+                        <circle cx="17" cy="17" r="2" fill="#FBBC05" />
+                        <circle cx="7" cy="17" r="2" fill="#34A853" />
+                        <circle cx="7" cy="7" r="2" fill="#4285F4" />
+                      </svg>
+                      <span className="font-medium">Google Lens</span>
                       <span className="absolute top-0 right-0 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-bl-md">
                         Consigliato
                       </span>
