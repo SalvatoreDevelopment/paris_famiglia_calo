@@ -2,40 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  font-size: 18px;
-}
-
-@media (max-width: 640px) {
-  html {
-    font-size: 16px;
-  }
-}
-
 body {
   font-family: Arial, Helvetica, sans-serif;
-  line-height: 1.6;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #printable-voucher,
-  #printable-voucher * {
-    visibility: visible;
-  }
-  #printable-voucher {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
   }
 }
 

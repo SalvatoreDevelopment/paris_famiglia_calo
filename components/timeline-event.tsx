@@ -1,212 +1,180 @@
 "use client"
+
 import { useState } from "react"
-import { ChevronDown, ChevronUp, Map, ExternalLink, Navigation, Train } from "lucide-react"
+import { ChevronDown, ChevronUp, MapPin, Clock, ExternalLink, FileText, Map } from "lucide-react"
+
+type VoucherProps = {
+  text: string
+  url?: string
+  details?: string
+  meetingPoint?: string
+  arrivalTime?: string
+}
+
+type TransportationProps = {
+  type: "metro" | "walk" | "bus" | "shuttle"
+  details: string
+  duration: string
+  destination?: string
+}
 
 type TimelineEventProps = {
   time: string
   emoji: string
   description: string
-  voucher?: {
-    text: string
-    url?: string
-    details?: string
-    meetingPoint?: string
-    arrivalTime?: string
-  }
-  isLast: boolean
+  voucher?: VoucherProps
+  transportation?: TransportationProps
+  isLast?: boolean
+  isCurrentActivity?: boolean
 }
 
-export function TimelineEvent({ time, emoji, description, voucher, isLast }: TimelineEventProps) {
-  const [showDetails, setShowDetails] = useState(false)
+export function TimelineEvent({
+  time,
+  emoji,
+  description,
+  voucher,
+  transportation,
+  isLast = false,
+  isCurrentActivity = false,
+}: TimelineEventProps) {
+  const [expanded, setExpanded] = useState(false)
 
-  // Determina se il voucher contiene informazioni di trasporto
-  const isTransport = voucher?.text?.includes("Metro") || voucher?.text?.includes("Trasporto")
-
-  // Determina se è un voucher di volo
-  const isFlightVoucher = voucher?.text?.includes("Volo") || voucher?.text?.includes("volo")
-
-  // Determina se è uno spostamento a piedi o un trasporto
-  const isWalking = emoji === "🚶" || emoji === "🚶‍♂️" || description.toLowerCase().includes("passeggiata")
-  const isTransportation =
-    emoji === "🚌" ||
-    emoji === "🚇" ||
-    emoji === "🚕" ||
-    description.toLowerCase().includes("navetta") ||
-    description.toLowerCase().includes("trasferimento") ||
-    description.toLowerCase().includes("spostamento")
-
-  // Determina se l'evento coinvolge l'uso della metro
-  const involvesMetro =
-    description.toLowerCase().includes("metro") ||
-    (voucher?.details && voucher.details.toLowerCase().includes("metro")) ||
-    (voucher?.details &&
-      (voucher.details.includes("M1") ||
-        voucher.details.includes("M2") ||
-        voucher.details.includes("M3") ||
-        voucher.details.includes("M4") ||
-        voucher.details.includes("M5") ||
-        voucher.details.includes("M6") ||
-        voucher.details.includes("M7") ||
-        voucher.details.includes("M8") ||
-        voucher.details.includes("M9") ||
-        voucher.details.includes("M10") ||
-        voucher.details.includes("M11") ||
-        voucher.details.includes("M12") ||
-        voucher.details.includes("M13") ||
-        voucher.details.includes("M14")))
-
-  // Determina se mostrare Google Maps
-  const showGoogleMaps = isWalking || isTransportation
-
-  // Determina se è un'attività organizzata (tour, visita guidata, ecc.)
-  const isOrganizedActivity =
-    description.toLowerCase().includes("tour") ||
-    description.toLowerCase().includes("visita") ||
-    description.toLowerCase().includes("crociera") ||
-    description.toLowerCase().includes("museo")
-
-  // Estrae la stazione della metro di partenza o arrivo, se presente
-  const extractMetroStation = () => {
-    const detailsText = voucher?.details || ""
-
-    // Cerca pattern come "Metro 14 da X a Y" o "Metro 12 → X"
-    if (detailsText.includes("Metro 14 da")) {
-      return detailsText.split("Metro 14 da ")[1].split(" a ")[0]
-    } else if (detailsText.includes("Metro 12 →")) {
-      return detailsText.split("Metro 12 →")[1].split(",")[0].trim()
-    } else if (detailsText.includes("Metro 14 →")) {
-      return detailsText.split("Metro 14 →")[1].split(",")[0].trim()
-    } else if (detailsText.includes("Metro 1 →")) {
-      return detailsText.split("Metro 1 →")[1].split(",")[0].trim()
-    }
-
-    return ""
+  // Function to open Google Maps with walking directions
+  const openWalkingDirections = () => {
+    // Extract destination from description or transportation
+    const destination = transportation?.destination || description.split(" - ")[1] || description
+    const encodedDestination = encodeURIComponent(`${destination}, Paris, France`)
+    window.open(`https://www.google.com/maps/dir/?api=1&travelmode=walking&destination=${encodedDestination}`, "_blank")
   }
 
-  // Costruisce l'URL di Google Maps per la destinazione
-  const getGoogleMapsUrl = () => {
-    let destination = ""
-    let travelMode = isWalking ? "walking" : "transit"
-
-    // Gestione speciale per luoghi specifici
-    if (description.includes("Louvre")) {
-      destination = "Musée du Louvre, Paris, France"
-    } else if (description.includes("Torre Eiffel")) {
-      destination = "Tour Eiffel, Paris, France"
-    } else if (description.includes("Montmartre")) {
-      destination = "Montmartre, Paris, France"
-    } else if (description.includes("Quartiere Latino")) {
-      destination = "Quartier Latin, Paris, France"
-    } else if (description.includes("Champs-Élysées")) {
-      destination = "Champs-Élysées, Paris, France"
-    } else if (description.includes("aeroporto")) {
-      destination = "Paris Beauvais Airport, France"
-      travelMode = "transit"
-    } else if (voucher?.meetingPoint) {
-      destination = voucher.meetingPoint + ", Paris, France"
-    } else if (description.includes("per ")) {
-      destination = description.split("per ")[1] + ", Paris, France"
-    } else if (description.includes("verso ")) {
-      destination = description.split("verso ")[1] + ", Paris, France"
-    } else {
-      // Usa una destinazione generica se non riesce a estrarre dal testo
-      destination = "Paris, France"
-    }
-
-    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=${travelMode}`
+  // Function to open Google Maps with transit directions
+  const openTransitDirections = () => {
+    // Extract destination from description or transportation
+    const destination = transportation?.destination || description.split(" - ")[1] || description
+    const encodedDestination = encodeURIComponent(`${destination}, Paris, France`)
+    window.open(`https://www.google.com/maps/dir/?api=1&travelmode=transit&destination=${encodedDestination}`, "_blank")
   }
 
-  // Costruisce l'URL di Google Maps per trovare la stazione della metro più vicina
-  const getMetroStationUrl = () => {
-    const metroStation = extractMetroStation()
-
-    if (metroStation) {
-      // Se abbiamo identificato una stazione specifica
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Metro ${metroStation} Paris France`)}`
-    } else {
-      // Cerca genericamente stazioni della metro nelle vicinanze
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Metro station Paris France")}`
-    }
+  // Function to find nearest metro station
+  const findNearestMetro = () => {
+    window.open("https://www.google.com/maps/search/metro+station+near+me", "_blank")
   }
 
   return (
-    <div className="flex">
-      <div className="flex flex-col items-center mr-4">
-        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-[#2a4d7f] text-white text-base font-bold">
-          {time}
-        </div>
-        {!isLast && <div className="w-0.5 h-full bg-[#2a4d7f]/20 mt-2"></div>}
-      </div>
-      <div className="flex-1">
-        <div className="text-xl">
-          <span className="mr-2">{emoji}</span>
-          <span className="font-medium">{description}</span>
-        </div>
-        <div className="mt-2">
-          <div className="flex flex-wrap gap-3">
-            {showGoogleMaps && (
-              <a
-                href={getGoogleMapsUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-[#2a4d7f] text-white rounded-lg text-base font-medium hover:opacity-90 transition-colors"
-              >
-                <Navigation className="mr-2 h-5 w-5" />
-                {isWalking ? "Indicazioni a piedi" : "Indicazioni trasporto"}
-              </a>
-            )}
+    <div
+      className={`relative ${isLast ? "" : "pb-6"} ${isCurrentActivity ? "bg-[#2a4d7f]/5 -mx-4 px-4 py-3 rounded-lg border border-[#2a4d7f]/20" : ""}`}
+    >
+      {/* Timeline connector */}
+      {!isLast && <div className="absolute left-[22px] top-[44px] bottom-0 w-[2px] bg-[#2a4d7f]/20"></div>}
 
-            {involvesMetro && (
-              <a
-                href={getMetroStationUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 bg-[#e06666] text-white rounded-lg text-base font-medium hover:opacity-90 transition-colors"
-              >
-                <Train className="mr-2 h-5 w-5" /> Trova stazione metro
-              </a>
-            )}
+      <div className="flex items-start">
+        {/* Time and emoji circle */}
+        <div className="flex flex-col items-center mr-4">
+          <div className="text-sm font-medium text-[#2a4d7f] mb-1">{time}</div>
+          <div
+            className={`flex items-center justify-center w-11 h-11 rounded-full bg-white border-2 ${
+              isCurrentActivity ? "border-[#e06666]" : "border-[#2a4d7f]"
+            } z-10`}
+          >
+            <span className="text-xl">{emoji}</span>
+          </div>
+        </div>
 
-            {voucher && (
-              <>
-                <button
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="inline-flex items-center px-4 py-2 bg-[#f5f0e6] text-[#2a4d7f] border border-[#2a4d7f]/30 rounded-lg text-base font-medium hover:bg-[#f5f0e6]/70 transition-colors"
-                >
-                  {isTransport ? <Map className="mr-2 h-5 w-5" /> : "📄"} {voucher.text}
-                  {showDetails ? <ChevronUp className="ml-2 h-5 w-5" /> : <ChevronDown className="ml-2 h-5 w-5" />}
+        {/* Content */}
+        <div className="flex-1">
+          <div
+            className={`font-medium ${isCurrentActivity ? "text-[#e06666]" : "text-[#2a4d7f]"} cursor-pointer`}
+            onClick={() => setExpanded(!expanded)}
+          >
+            <div className="flex justify-between items-center">
+              <div>{description}</div>
+              {(voucher || transportation) && (
+                <button className="ml-2 text-gray-500">
+                  {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
-
-                {voucher.url && voucher.url !== "#" && !isFlightVoucher && (
-                  <a
-                    href={voucher.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 bg-[#2a4d7f] text-white rounded-lg text-base font-medium hover:bg-[#2a4d7f]/90 transition-colors"
-                  >
-                    <ExternalLink className="mr-2 h-5 w-5" /> Apri PDF voucher
-                  </a>
-                )}
-              </>
-            )}
+              )}
+            </div>
           </div>
 
-          {voucher && showDetails && (
-            <div className="mt-3 p-4 bg-[#f5f0e6] rounded-lg text-base whitespace-pre-line border border-[#2a4d7f]/20">
-              {voucher.meetingPoint && isOrganizedActivity && (
-                <p className="mb-2">
-                  <span className="font-semibold">Punto d'incontro:</span> {voucher.meetingPoint}
-                </p>
+          {/* Expanded details */}
+          {expanded && (
+            <div className="mt-3 space-y-4">
+              {/* Transportation details */}
+              {transportation && (
+                <div className="bg-[#2a4d7f]/5 p-3 rounded-lg">
+                  <div className="flex items-center text-[#2a4d7f] font-medium mb-2">
+                    {transportation.type === "metro" && <span className="mr-2">🚇</span>}
+                    {transportation.type === "walk" && <span className="mr-2">🚶</span>}
+                    {transportation.type === "bus" && <span className="mr-2">🚌</span>}
+                    {transportation.type === "shuttle" && <span className="mr-2">🚐</span>}
+                    <span>Spostamento:</span>
+                  </div>
+                  <p className="text-gray-700 mb-2">{transportation.details}</p>
+                  <div className="flex items-center text-gray-500 text-sm mb-3">
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>Durata: {transportation.duration}</span>
+                  </div>
+
+                  {/* Transportation buttons */}
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={openWalkingDirections}
+                      className="flex items-center px-3 py-2 bg-[#2a4d7f] text-white text-sm rounded-lg hover:bg-[#2a4d7f]/90"
+                    >
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span>Indicazioni a piedi</span>
+                    </button>
+                    <button
+                      onClick={openTransitDirections}
+                      className="flex items-center px-3 py-2 bg-[#2a4d7f] text-white text-sm rounded-lg hover:bg-[#2a4d7f]/90"
+                    >
+                      <Map className="h-4 w-4 mr-1" />
+                      <span>Indicazioni trasporto</span>
+                    </button>
+                    <button
+                      onClick={findNearestMetro}
+                      className="flex items-center px-3 py-2 bg-[#2a4d7f] text-white text-sm rounded-lg hover:bg-[#2a4d7f]/90"
+                    >
+                      <MapPin className="h-4 w-4 mr-1" />
+                      <span>Trova stazione metro</span>
+                    </button>
+                  </div>
+                </div>
               )}
-              {voucher.arrivalTime && (
-                <p className="mb-2">
-                  <span className="font-semibold">Arrivo:</span> {voucher.arrivalTime}
-                </p>
-              )}
-              {voucher.details && (
-                <div className="mb-2">
-                  <span className="font-semibold">Dettagli:</span>
-                  <div className="mt-1">{voucher.details}</div>
+
+              {/* Voucher details */}
+              {voucher && (
+                <div className="bg-[#e06666]/5 p-3 rounded-lg border border-[#e06666]/20">
+                  <div className="flex items-center text-[#e06666] font-medium mb-2">
+                    <FileText className="h-4 w-4 mr-1" />
+                    <span>{voucher.details ? "Dettagli voucher:" : "Voucher disponibile"}</span>
+                  </div>
+
+                  {voucher.details && <p className="text-gray-700 whitespace-pre-line mb-3">{voucher.details}</p>}
+
+                  {voucher.meetingPoint && (
+                    <div className="mb-3">
+                      <div className="text-gray-700 font-medium">Punto d'incontro:</div>
+                      <p className="text-gray-600">{voucher.meetingPoint}</p>
+                    </div>
+                  )}
+
+                  {voucher.arrivalTime && (
+                    <div className="mb-3">
+                      <div className="text-gray-700 font-medium">Orario di arrivo consigliato:</div>
+                      <p className="text-gray-600">{voucher.arrivalTime}</p>
+                    </div>
+                  )}
+
+                  {voucher.url && (
+                    <button
+                      onClick={() => window.open(voucher.url, "_blank")}
+                      className="flex items-center px-3 py-2 bg-[#e06666] text-white text-sm rounded-lg hover:bg-[#e06666]/90"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      <span>{voucher.text}</span>
+                    </button>
+                  )}
                 </div>
               )}
             </div>

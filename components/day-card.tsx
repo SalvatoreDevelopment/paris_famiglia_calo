@@ -13,6 +13,12 @@ type Event = {
     meetingPoint?: string
     arrivalTime?: string
   }
+  transportation?: {
+    type: "metro" | "walk" | "bus" | "shuttle"
+    details: string
+    duration: string
+    destination?: string
+  }
 }
 
 type DayCardProps = {
@@ -20,9 +26,13 @@ type DayCardProps = {
   date: string
   title: string
   events: Event[]
+  currentActivity?: {
+    time: string
+    description: string
+  } | null
 }
 
-export function DayCard({ id, date, title, events }: DayCardProps) {
+export function DayCard({ id, date, title, events, currentActivity }: DayCardProps) {
   return (
     <div id={id} className="w-full bg-white rounded-xl shadow-md p-5 mb-6">
       <h2 className="text-2xl font-bold text-[#2a4d7f] mb-4">
@@ -38,18 +48,14 @@ export function DayCard({ id, date, title, events }: DayCardProps) {
             time={event.time}
             emoji={event.emoji}
             description={event.description}
-            voucher={
-              event.voucher
-                ? {
-                    text: event.voucher.text,
-                    url: event.voucher.url,
-                    details: event.voucher.details,
-                    meetingPoint: event.voucher.meetingPoint,
-                    arrivalTime: event.voucher.arrivalTime,
-                  }
-                : undefined
-            }
+            voucher={event.voucher}
+            transportation={event.transportation}
             isLast={index === events.length - 1}
+            isCurrentActivity={
+              currentActivity !== null &&
+              currentActivity?.time === event.time &&
+              currentActivity?.description === event.description
+            }
           />
         ))}
       </div>

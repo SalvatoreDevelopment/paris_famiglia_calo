@@ -1,4 +1,29 @@
-export function getDayData() {
+type Event = {
+  time: string
+  emoji: string
+  description: string
+  voucher?: {
+    text: string
+    url?: string
+    imageUrl?: string
+    title?: string
+    details?: string
+    meetingPoint?: string
+    arrivalTime?: string
+  }
+  transportation?: {
+    type: "metro" | "walk" | "bus" | "shuttle"
+    details: string
+    duration: string
+    destination?: string
+  }
+}
+
+type DayData = {
+  [key: string]: Event[]
+}
+
+export function getDayData(): DayData {
   return {
     day1: [
       {
@@ -6,25 +31,26 @@ export function getDayData() {
         emoji: "✈️",
         description: "Partenza da Brindisi (BDS) con volo per Parigi Beauvais",
         voucher: {
-          text: "Info Volo",
-          url: "#",
-          details:
-            "Ryanair FR1234. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
+          text: "Apri PDF",
+          url: "/pdfs/volo-andata.pdf",
+          title: "Volo Brindisi → Parigi Beauvais",
+          details: "Ryanair FR123 • Posto: 15A, 15B, 15C",
         },
       },
       {
         time: "12:00",
-        emoji: "✈️",
+        emoji: "🛬",
         description: "Arrivo a Parigi Beauvais (BVA)",
       },
       {
         time: "12:30",
         emoji: "🚌",
         description: "Trasferimento a Parigi centro (navetta Beauvais + metro per Bercy)",
-        voucher: {
-          text: "Info Trasporto",
-          url: "#",
-          details: "Durata trasferimento: circa 2 ore. Navetta aeroportuale + metro per Bercy",
+        transportation: {
+          type: "shuttle",
+          details: "Navetta aeroportuale + Metro linea 14",
+          duration: "2 ore",
+          destination: "Parigi centro",
         },
       },
       {
@@ -32,56 +58,35 @@ export function getDayData() {
         emoji: "🏨",
         description: "Arrivo e check-in presso Campanile Hotel Paris Bercy Village",
         voucher: {
-          text: "Voucher Hotel",
-          url: "/pdfs/hotel-campanile.pdf",
-          title: "Hotel Campanile Paris Bercy Village",
-          details: `Elios Tours
-0832311077
-sergio.mandurino@eliostours.it
-Reservation 34111277 made on 28.04.25
-
-Campanile Hotel Paris Bercy Village
-75012, 17 Rue Baron Le Roy, Paris
-33144677575
-
-Check-in: 21.05.2025, from 14:00:00
-Check-out: 24.05.2025, until 12:00:00
-
-Double room (full double bed), for 2 adults
-Bedding: Double bed
-Guests: Vincenzo Calo, Addolorata Martella
-
-Meal type: Breakfast included
-
-Not included: City tax: 33 EUR
-
-GPS: 48.83517 2.387617`,
-          meetingPoint: "17 Rue Baron Le Roy, 75012 Paris",
-          arrivalTime: "Check-in dalle 14:00, Check-out entro le 12:00 del 24/05",
+          text: "Apri PDF",
+          url: "/pdfs/hotel-voucher.pdf",
+          title: "Campanile Hotel Paris Bercy Village",
+          details:
+            "Prenotazione: 3 notti, 2 camere doppie\nIndirizzo: 177 Boulevard de Bercy, 75012 Paris\nTelefono: +33 1 43 46 65 50",
         },
       },
       {
         time: "17:00",
         emoji: "🚶",
         description: "Partenza per il tour dei misteri",
-        voucher: {
-          text: "Indicazioni Metro",
-          url: "#",
-          details:
-            "🚇 Metro 14 da Cour Saint-Émilion a Châtelet, poi 🚶‍♂ a piedi fino al punto d'incontro. Durata totale: ~25 min",
+        transportation: {
+          type: "metro",
+          details: "Metro 14 da Cour Saint-Émilion a Châtelet, poi a piedi fino al punto d'incontro",
+          duration: "25 min",
+          destination: "Île de la Cité",
         },
       },
       {
         time: "18:00",
         emoji: "🕵️",
-        description: "Free Tour Misteri e Leggende di Parigi (fino alle 20:00)",
+        description: "Free Tour Misteri e Leggende di Parigi",
         voucher: {
-          text: "Voucher Free Tour Misteri",
-          url: "/pdfs/free-tour-misteri.pdf",
+          text: "Apri PDF",
+          url: "/pdfs/tour-misteri.pdf",
           title: "Free Tour Misteri e Leggende di Parigi",
-          meetingPoint: "Uscita della metro Cité",
-          arrivalTime: "Arrivare 15 minuti prima",
-          details: "La guida avrà un ombrello nero con logo giallo",
+          details: "Durata: 2 ore\nLingua: Italiano\nGuida: Ombrello nero con logo giallo",
+          meetingPoint: "Davanti alla statua di Carlo Magno, Notre-Dame",
+          arrivalTime: "17:45 (15 min prima)",
         },
       },
       {
@@ -98,53 +103,56 @@ GPS: 48.83517 2.387617`,
     day2: [
       {
         time: "08:30",
-        emoji: "☕",
+        emoji: "🥐",
         description: "Colazione e partenza per Montmartre",
-        voucher: {
-          text: "Indicazioni Metro",
-          url: "#",
-          details: "🚇 Metro 14 → Madeleine, poi cambio con Metro 12 → Abbesses. Durata totale: ~45 min",
+        transportation: {
+          type: "metro",
+          details: "Metro 14 → Madeleine, poi cambio con Metro 12 → Abbesses",
+          duration: "45 min",
+          destination: "Montmartre",
         },
       },
       {
         time: "11:00",
         emoji: "🎨",
-        description: "Free Tour Montmartre (fino alle 13:00)",
+        description: "Free Tour Montmartre (Sacré-Cœur, Place du Tertre, curiosità artistiche)",
         voucher: {
-          text: "Voucher Free Tour Montmartre",
-          url: "/pdfs/free-tour-montmartre.pdf",
-          title: "Free Tour di Montmartre",
+          text: "Apri PDF",
+          url: "/pdfs/tour-montmartre.pdf",
+          title: "Free Tour Montmartre",
+          details: "Durata: 2 ore\nLingua: Italiano\nGuida: Ombrello nero con logo giallo",
           meetingPoint: "Place Blanche, davanti al ristorante FIVE GUYS",
-          arrivalTime: "Arrivare 15 minuti prima",
-          details: "La guida avrà un cartello CIVITATIS e un ombrello verde",
+          arrivalTime: "10:45 (15 min prima)",
         },
       },
       {
         time: "13:00",
-        emoji: "🍽️",
-        description: "Pausa pranzo e spostamento verso il Louvre",
-        voucher: {
-          text: "Indicazioni Metro",
-          url: "#",
-          details: "🚇 Metro 12 → Concorde, poi cambio con Metro 1 → Palais Royal – Musée du Louvre",
+        emoji: "☕",
+        description: "Pausa + spostamento verso il Louvre",
+        transportation: {
+          type: "metro",
+          details: "Metro 12 → Concorde, poi cambio con Metro 1 → Palais Royal – Musée du Louvre",
+          duration: "30 min",
+          destination: "Louvre",
         },
       },
       {
         time: "14:00",
-        emoji: "🏛️",
-        description: "Visita al Museo del Louvre (fino alle 16:00)",
+        emoji: "🖼️",
+        description: "Visita al Museo del Louvre",
         voucher: {
-          text: "Biglietti Louvre",
-          url: "/pdfs/louvre.pdf",
+          text: "Apri PDF",
+          url: "/pdfs/louvre-tickets.pdf",
           title: "Biglietti Museo del Louvre",
-          meetingPoint: "Entrée Carrousel o Pyramide",
-          details: "Portare documento d'identità",
+          details:
+            "Durata consigliata: 2 ore\nIngresso: Piramide principale\nInclude: Accesso a tutte le collezioni permanenti",
+          arrivalTime: "13:45 (15 min prima)",
         },
       },
       {
         time: "16:00",
         emoji: "🚶",
-        description: "Passeggiata: Giardini Tuileries, Place de la Concorde, Champs-Élysées",
+        description: "Passeggiata: Giardini delle Tuileries, Place de la Concorde, inizio Champs-Élysées",
       },
       {
         time: "17:00",
@@ -159,100 +167,112 @@ GPS: 48.83517 2.387617`,
     ],
     day3: [
       {
-        time: "09:30",
-        emoji: "☕",
-        description: "Colazione in hotel",
+        time: "09:45",
+        emoji: "🚶",
+        description: "Partenza per il Quartiere Latino",
+        transportation: {
+          type: "metro",
+          details: "Metro 14 → Châtelet, poi a piedi fino al punto d'incontro",
+          duration: "30 min",
+          destination: "Quartiere Latino",
+        },
       },
       {
         time: "10:30",
         emoji: "📚",
-        description: "Visita al Quartiere Latino",
+        description: "Free Tour Quartiere Latino (Sorbona, Pantheon, Notre-Dame)",
         voucher: {
-          text: "Voucher Free Tour Quartiere Latino",
-          url: "/pdfs/free-tour-quartiere-latino.pdf",
-          title: "Free Tour del Quartiere Latino",
-          meetingPoint: "Fontana di Saint-Michel, Place Saint Michel",
-          arrivalTime: "Arrivare 15 minuti prima",
-          details: "La guida avrà un ombrello nero con logo giallo",
+          text: "Apri PDF",
+          url: "/pdfs/tour-quartiere-latino.pdf",
+          title: "Free Tour Quartiere Latino",
+          details: "Durata: 2 ore\nLingua: Italiano\nGuida: Ombrello nero con logo giallo",
+          meetingPoint: "Fontana Saint-Michel, Place Saint-Michel",
+          arrivalTime: "10:15 (15 min prima)",
         },
       },
       {
-        time: "13:30",
-        emoji: "🍽️",
-        description: "Pranzo in un bistrot",
+        time: "12:30",
+        emoji: "🥗",
+        description: "Pranzo in zona Jardin du Luxembourg",
+      },
+      {
+        time: "14:30",
+        emoji: "🚇",
+        description: "Spostamento verso la Torre Eiffel",
+        transportation: {
+          type: "metro",
+          details: "Metro 4 → Strasbourg–Saint-Denis, poi cambio con Metro 9 → Trocadéro",
+          duration: "30 min",
+          destination: "Torre Eiffel",
+        },
       },
       {
         time: "16:00",
         emoji: "🗼",
-        description: "Visita alla Torre Eiffel",
+        description: "Free Tour Torre Eiffel e dintorni",
         voucher: {
-          text: "Voucher Free Tour Torre Eiffel",
-          url: "/pdfs/free-tour-torre-eiffel.pdf",
-          title: "Free Tour nei dintorni della Torre Eiffel e Arco di Trionfo",
-          meetingPoint: "Av. des Champs-Élysées, 152, davanti al negozio MONTBLANC",
-          arrivalTime: "Arrivare 10 minuti prima",
-          details: "La guida avrà un ombrello verde e un cartello CIVITATIS",
+          text: "Apri PDF",
+          url: "/pdfs/tour-eiffel.pdf",
+          title: "Free Tour Torre Eiffel",
+          details: "Durata: 2 ore\nLingua: Italiano\nGuida: Ombrello nero con logo giallo",
+          meetingPoint: "Piazza del Trocadéro, davanti alla statua equestre",
+          arrivalTime: "15:45 (15 min prima)",
+        },
+      },
+      {
+        time: "18:00",
+        emoji: "🚢",
+        description: "Crociera sulla Senna",
+        voucher: {
+          text: "Apri PDF",
+          url: "/pdfs/crociera-senna.pdf",
+          title: "Crociera sulla Senna",
+          details: "Durata: 1 ora\nCompagnia: Bateaux Parisiens\nImbarco: Pontile ai piedi della Torre Eiffel",
+          arrivalTime: "17:45 (15 min prima)",
         },
       },
       {
         time: "19:00",
-        emoji: "🚢",
-        description: "Crociera sulla Senna",
-        voucher: {
-          text: "Voucher Crociera",
-          url: "/pdfs/crociera-senna.pdf",
-          title: "Crociera sulla Senna",
-          meetingPoint: "Bateaux Parisiens, Port de la Bourdonnais, 75007 Paris",
-          arrivalTime: "Presentarsi 15 minuti prima",
-          details: "Non sarà possibile accedere alla barca con un bagaglio superiore ai 16 litri di volume",
-        },
+        emoji: "🍽️",
+        description: "Cena in zona Torre Eiffel o picnic al Champ de Mars",
       },
       {
         time: "21:00",
-        emoji: "🍽️",
-        description: "Cena romantica",
+        emoji: "🏨",
+        description: "Rientro in hotel",
       },
     ],
     day4: [
       {
-        time: "09:00",
-        emoji: "☕",
-        description: "Colazione in hotel",
+        time: "08:30",
+        emoji: "🥐",
+        description: "Colazione e passeggiata a Bercy Village",
       },
       {
-        time: "10:00",
-        emoji: "🏨",
-        description: "Check-out dall'hotel",
-        voucher: {
-          text: "Ricordati di lasciare la camera",
-          url: "#",
-          details: "Check-out entro le 12:00",
+        time: "10:30",
+        emoji: "🧳",
+        description: "Ritiro bagagli e partenza verso Beauvais",
+      },
+      {
+        time: "12:00",
+        emoji: "🚌",
+        description: "Trasferimento a Aeroporto di Parigi Beauvais (BVA)",
+        transportation: {
+          type: "shuttle",
+          details: "Metro + Navetta aeroportuale",
+          duration: "3 ore e 30 min",
+          destination: "Aeroporto di Beauvais",
         },
       },
       {
-        time: "11:00",
-        emoji: "🛍️",
-        description: "Shopping e passeggiata finale",
-      },
-      {
-        time: "14:00",
-        emoji: "🍽️",
-        description: "Pranzo d'arrivederci",
-      },
-      {
-        time: "16:00",
-        emoji: "🚌",
-        description: "Navetta per l'aeroporto",
-      },
-      {
-        time: "19:30",
+        time: "17:20",
         emoji: "✈️",
-        description: "Volo Paris BVA → Brindisi",
+        description: "Volo di ritorno per Brindisi",
         voucher: {
-          text: "Info Volo",
-          url: "#",
-          details:
-            "Ryanair FR5678. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
+          text: "Apri PDF",
+          url: "/pdfs/volo-ritorno.pdf",
+          title: "Volo Parigi Beauvais → Brindisi",
+          details: "Ryanair FR456 • Posto: 15A, 15B, 15C",
         },
       },
     ],

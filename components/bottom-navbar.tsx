@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Calendar, Home, FileText } from "lucide-react"
 
 type BottomNavbarProps = {
@@ -11,19 +11,28 @@ type BottomNavbarProps = {
 export function BottomNavbar({ activeDay, setActiveDay }: BottomNavbarProps) {
   const [scrollPosition, setScrollPosition] = useState(0)
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollPosition(window.scrollY)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
+  // Use useCallback to memoize the scroll handler
+  const handleScroll = useCallback(() => {
+    setScrollPosition(window.scrollY)
   }, [])
 
-  const handleDayClick = (dayId: string) => {
-    setActiveDay(dayId)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  // Add scroll event listener only once on mount
+  useEffect(() => {
+    // Add scroll event listener
+    window.addEventListener("scroll", handleScroll)
+
+    // Clean up event listener on component unmount
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [handleScroll]) // Only re-run if handleScroll changes
+
+  // Separate function for handling day click to avoid recreating it on every render
+  const handleDayClick = useCallback(
+    (dayId: string) => {
+      setActiveDay(dayId)
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    },
+    [setActiveDay],
+  )
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e06666]/20 shadow-lg z-10">

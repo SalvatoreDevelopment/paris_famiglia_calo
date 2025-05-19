@@ -1,9 +1,38 @@
 "use client"
+
 import { useState } from "react"
-import { AlertTriangle, X, Phone, MapPin, Hotel, Flag, AlertCircle } from "lucide-react"
+import { Phone, X, MapPin, User, Building } from "lucide-react"
 
 export function SosButton() {
   const [isOpen, setIsOpen] = useState(false)
+
+  const emergencyContacts = [
+    {
+      name: "Numero di emergenza europeo",
+      number: "112",
+      description: "Polizia, ambulanza, vigili del fuoco",
+    },
+    {
+      name: "Polizia",
+      number: "17",
+      description: "Emergenze di sicurezza",
+    },
+    {
+      name: "Ambulanza",
+      number: "15",
+      description: "Emergenze mediche",
+    },
+    {
+      name: "Ambasciata Italiana a Parigi",
+      number: "+33 1 49 54 03 00",
+      description: "Assistenza ai cittadini italiani",
+    },
+    {
+      name: "Hotel Campanile Bercy",
+      number: "+33 1 43 46 65 50",
+      description: "Assistenza dall'hotel",
+    },
+  ]
 
   const handleCall = (number: string) => {
     window.location.href = `tel:${number}`
@@ -11,186 +40,110 @@ export function SosButton() {
 
   const handleShareLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
-        const message = `Sono qui: https://www.google.com/maps?q=${lat},${lng}`
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          const message = `La mia posizione attuale: https://maps.google.com/?q=${latitude},${longitude}`
 
-        // Tenta di usare l'API di condivisione se disponibile
-        if (navigator.share) {
-          navigator
-            .share({
-              title: "La mia posizione",
-              text: message,
-              url: `https://www.google.com/maps?q=${lat},${lng}`,
-            })
-            .catch((err) => {
-              // Fallback: copia negli appunti
-              navigator.clipboard.writeText(message)
+          // Try to use the Web Share API if available
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "La mia posizione",
+                text: message,
+              })
+              .catch((err) => {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(message).then(() => {
+                  alert("Posizione copiata negli appunti. Puoi incollarla in un messaggio.")
+                })
+              })
+          } else {
+            // Fallback: copy to clipboard
+            navigator.clipboard.writeText(message).then(() => {
               alert("Posizione copiata negli appunti. Puoi incollarla in un messaggio.")
             })
-        } else {
-          // Fallback per browser che non supportano l'API di condivisione
-          navigator.clipboard.writeText(message)
-          alert("Posizione copiata negli appunti. Puoi incollarla in un messaggio.")
-        }
-      })
+          }
+        },
+        (error) => {
+          alert("Impossibile ottenere la posizione: " + error.message)
+        },
+      )
     } else {
-      alert("Il tuo dispositivo non supporta la geolocalizzazione.")
+      alert("Geolocalizzazione non supportata dal tuo dispositivo")
     }
   }
 
   return (
     <>
-      {/* Pulsante SOS fisso */}
+      {/* SOS Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed right-4 bottom-24 z-20 flex items-center justify-center w-16 h-16 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300"
+        className="fixed bottom-24 right-4 z-20 w-14 h-14 rounded-full bg-red-600 text-white shadow-lg flex items-center justify-center hover:bg-red-700 transition-colors"
         aria-label="Emergenza"
       >
-        <AlertTriangle className="h-8 w-8" />
+        <Phone className="h-6 w-6" />
       </button>
 
-      {/* Schermata di emergenza */}
+      {/* Emergency Panel */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-auto">
-            {/* Header */}
-            <div className="bg-red-600 text-white p-4 flex items-center justify-between rounded-t-xl">
-              <div className="flex items-center">
-                <AlertTriangle className="h-6 w-6 mr-2" />
-                <h2 className="text-xl font-bold">Emergenza</h2>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 rounded-full hover:bg-white/20"
-                aria-label="Chiudi"
-              >
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <div className="p-4 bg-red-600 text-white rounded-t-xl flex justify-between items-center">
+              <h2 className="text-xl font-bold">Emergenza SOS</h2>
+              <button onClick={() => setIsOpen(false)} className="p-1 rounded-full hover:bg-white/20">
                 <X className="h-6 w-6" />
               </button>
             </div>
 
-            {/* Contenuto */}
-            <div className="p-5 space-y-6">
-              {/* Numeri di emergenza */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Numeri di emergenza</h3>
+            <div className="p-4">
+              <div className="mb-4">
+                <button
+                  onClick={handleShareLocation}
+                  className="w-full py-3 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700"
+                >
+                  <MapPin className="h-5 w-5 mr-2" />
+                  Condividi la tua posizione
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Numeri di emergenza:</h3>
                 <div className="space-y-3">
-                  <button
-                    onClick={() => handleCall("112")}
-                    className="flex items-center justify-between w-full p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
-                  >
-                    <div className="flex items-center">
-                      <AlertCircle className="h-5 w-5 text-red-600 mr-3" />
-                      <span className="font-medium">Emergenza europea</span>
+                  {emergencyContacts.map((contact, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex items-start">
+                        {contact.name.includes("Hotel") ? (
+                          <Building className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                        ) : (
+                          <User className="h-5 w-5 text-gray-500 mr-2 mt-0.5" />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-800">{contact.name}</div>
+                          <div className="text-sm text-gray-500">{contact.description}</div>
+                        </div>
+                        <button
+                          onClick={() => handleCall(contact.number)}
+                          className="ml-2 px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 flex items-center"
+                        >
+                          <Phone className="h-4 w-4 mr-1" />
+                          <span>{contact.number}</span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center text-red-600">
-                      <Phone className="h-4 w-4 mr-1" />
-                      <span className="font-bold">112</span>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => handleCall("15")}
-                    className="flex items-center justify-between w-full p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
-                  >
-                    <div className="flex items-center">
-                      <AlertCircle className="h-5 w-5 text-red-600 mr-3" />
-                      <span className="font-medium">Emergenza medica</span>
-                    </div>
-                    <div className="flex items-center text-red-600">
-                      <Phone className="h-4 w-4 mr-1" />
-                      <span className="font-bold">15</span>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => handleCall("17")}
-                    className="flex items-center justify-between w-full p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100"
-                  >
-                    <div className="flex items-center">
-                      <Flag className="h-5 w-5 text-red-600 mr-3" />
-                      <span className="font-medium">Polizia</span>
-                    </div>
-                    <div className="flex items-center text-red-600">
-                      <Phone className="h-4 w-4 mr-1" />
-                      <span className="font-bold">17</span>
-                    </div>
-                  </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Informazioni hotel */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Il tuo hotel</h3>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-start mb-2">
-                    <Hotel className="h-5 w-5 text-[#2a4d7f] mr-2 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-[#2a4d7f]">Campanile Hotel Paris Bercy Village</p>
-                      <p className="text-gray-700">17 Rue Baron Le Roy, 75012 Paris</p>
-                      <p className="text-gray-700">Tel: +33 1 44 67 75 75</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() =>
-                      window.open(
-                        "https://www.google.com/maps/dir/?api=1&destination=Campanile+Hotel+Paris+Bercy+Village,+17+Rue+Baron+Le+Roy,+75012+Paris,+France",
-                        "_blank",
-                      )
-                    }
-                    className="w-full mt-2 py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Indicazioni per l'hotel
-                  </button>
-                </div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <h3 className="font-medium text-yellow-800 mb-1">Informazioni importanti:</h3>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  <li>• In caso di emergenza, chiama prima il 112</li>
+                  <li>• Comunica sempre la tua posizione esatta</li>
+                  <li>• Mantieni la calma e segui le istruzioni</li>
+                  <li>• Tieni a portata di mano i documenti d'identità</li>
+                </ul>
               </div>
-
-              {/* Ambasciata italiana */}
-              <div>
-                <h3 className="text-lg font-bold text-gray-800 mb-3">Ambasciata italiana</h3>
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-start mb-2">
-                    <Flag className="h-5 w-5 text-[#2a4d7f] mr-2 mt-0.5" />
-                    <div>
-                      <p className="font-bold text-[#2a4d7f]">Ambasciata d'Italia a Parigi</p>
-                      <p className="text-gray-700">51 Rue de Varenne, 75007 Paris</p>
-                      <p className="text-gray-700">Tel: +33 1 49 54 03 00</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col space-y-2 mt-2">
-                    <button
-                      onClick={() =>
-                        window.open(
-                          "https://www.google.com/maps/dir/?api=1&destination=Ambasciata+d'Italia+a+Parigi,+51+Rue+de+Varenne,+75007+Paris,+France",
-                          "_blank",
-                        )
-                      }
-                      className="w-full py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
-                    >
-                      <MapPin className="h-4 w-4 mr-2" />
-                      Indicazioni per l'ambasciata
-                    </button>
-                    <button
-                      onClick={() => handleCall("33149540300")}
-                      className="w-full py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
-                    >
-                      <Phone className="h-4 w-4 mr-2" />
-                      Chiama l'ambasciata
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Condividi posizione */}
-              <button
-                onClick={handleShareLocation}
-                className="w-full py-3 bg-green-600 text-white rounded-lg flex items-center justify-center font-bold text-lg hover:bg-green-700"
-              >
-                <MapPin className="h-5 w-5 mr-2" />
-                Condividi la mia posizione
-              </button>
             </div>
           </div>
         </div>
