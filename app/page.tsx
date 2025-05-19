@@ -8,13 +8,12 @@ import { SosButton } from "../components/sos-button"
 import { CurrentActivityIndicator } from "../components/current-activity-indicator"
 import { getDayData } from "../lib/day-data"
 import { Info } from "lucide-react"
-// Aggiungi l'import per il componente CameraTranslator
-// import { CameraTranslator } from "../components/camera-translator"
+import { PDFPreloader } from "../lib/pdf-preloader"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
-  const [showHelp, setShowHelp] = useState(false) // Inizializzato a false, verrà aggiornato dopo il controllo in localStorage
-  const [helpLoaded, setHelpLoaded] = useState(false) // Flag per tracciare se abbiamo già controllato localStorage
+  const [showHelp, setShowHelp] = useState(false)
+  const [helpLoaded, setHelpLoaded] = useState(false)
   const [currentActivity, setCurrentActivity] = useState<{
     day: string
     time: string
@@ -23,6 +22,12 @@ export default function Home() {
 
   // Get day data once, not on every render - use useMemo to ensure it's stable
   const dayData = useMemo(() => getDayData(), [])
+
+  // Precarica tutti i PDF all'avvio dell'applicazione
+  useEffect(() => {
+    // Avvia il precaricamento dei PDF
+    PDFPreloader.preloadAllPDFs()
+  }, [])
 
   // Check localStorage for guide preference on component mount
   useEffect(() => {
@@ -270,8 +275,6 @@ export default function Home() {
         {activeDay === "all" && <Notes />}
       </section>
 
-      {/* Aggiungi il componente CameraTranslator prima del SosButton */}
-      {/* <CameraTranslator /> */}
       {/* SOS Button */}
       <SosButton />
 

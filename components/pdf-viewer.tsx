@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { X, Download, ChevronLeft, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
+import { PDFPreloader } from "../lib/pdf-preloader"
 
 type PDFViewerProps = {
   url: string
@@ -15,6 +16,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
   const [isMobile, setIsMobile] = useState(false)
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
+  const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -38,6 +40,45 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
     window.addEventListener("resize", checkMobile)
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
+
+  // Carica il PDF dalla cache o lo scarica
+  useEffect(() => {
+    const loadPDF = async () => {
+      setLoading(true)
+
+      try {
+        // Controlla se il PDF è già nella cache
+        if (PDFPreloader.isInCache(url)) {
+          const cachedUrl = PDFPreloader.getObjectURL(url)
+          if (cachedUrl) {
+            setObjectUrl(cachedUrl)
+            return
+          }
+        }
+
+        // Altrimenti, carica il PDF
+        const pdfBlob = await PDFPreloader.getPDF(url)
+        if (pdfBlob) {
+          const blobUrl = URL.createObjectURL(pdfBlob)
+          setObjectUrl(blobUrl)
+        } else {
+          setLoadError(true)
+        }
+      } catch (error) {
+        console.error("Errore durante il caricamento del PDF:", error)
+        setLoadError(true)
+      }
+    }
+
+    loadPDF()
+
+    // Cleanup
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl)
+      }
+    }
+  }, [url])
 
   // Add loading timeout
   useEffect(() => {
@@ -70,12 +111,22 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
   // Download PDF
   const downloadPDF = () => {
-    const link = document.createElement("a")
-    link.href = url
-    link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (objectUrl) {
+      const link = document.createElement("a")
+      link.href = objectUrl
+      link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } else {
+      // Fallback to original URL if object URL is not available
+      const link = document.createElement("a")
+      link.href = url
+      link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   }
 
   // Handle iframe load error
@@ -183,15 +234,17 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
               transition: "transform 0.3s ease",
             }}
           >
-            <iframe
-              ref={iframeRef}
-              src={`${url}#toolbar=0&navpanes=0&view=FitH`}
-              className="w-full h-full"
-              onLoad={handleIframeLoad}
-              onError={handleIframeError}
-              title={title}
-              style={{ border: "none" }}
-            />
+            {objectUrl && (
+              <iframe
+                ref={iframeRef}
+                src={`${objectUrl}#toolbar=0&navpanes=0&view=FitH`}
+                className="w-full h-full"
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+                title={title}
+                style={{ border: "none" }}
+              />
+            )}
           </div>
         )}
       </div>
