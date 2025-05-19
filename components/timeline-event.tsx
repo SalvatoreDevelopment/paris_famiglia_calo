@@ -2,13 +2,15 @@
 
 import { useState } from "react"
 import { ChevronDown, ChevronUp, MapPin, Clock, ExternalLink, FileText, Map } from "lucide-react"
+import { PDFViewer } from "./pdf-viewer"
 
 type VoucherProps = {
-  text: string
+  text?: string
   url?: string
   details?: string
   meetingPoint?: string
   arrivalTime?: string
+  title?: string
 }
 
 type TransportationProps = {
@@ -38,6 +40,7 @@ export function TimelineEvent({
   isCurrentActivity = false,
 }: TimelineEventProps) {
   const [expanded, setExpanded] = useState(false)
+  const [showPDF, setShowPDF] = useState(false)
 
   // Function to open Google Maps with walking directions
   const openWalkingDirections = () => {
@@ -58,6 +61,13 @@ export function TimelineEvent({
   // Function to find nearest metro station
   const findNearestMetro = () => {
     window.open("https://www.google.com/maps/search/metro+station+near+me", "_blank")
+  }
+
+  // Function to handle voucher click
+  const handleVoucherClick = () => {
+    if (voucher?.url) {
+      setShowPDF(true)
+    }
   }
 
   return (
@@ -166,9 +176,9 @@ export function TimelineEvent({
                     </div>
                   )}
 
-                  {voucher.url && (
+                  {voucher.url && voucher.text && (
                     <button
-                      onClick={() => window.open(voucher.url, "_blank")}
+                      onClick={handleVoucherClick}
                       className="flex items-center px-3 py-2 bg-[#e06666] text-white text-sm rounded-lg hover:bg-[#e06666]/90"
                     >
                       <ExternalLink className="h-4 w-4 mr-1" />
@@ -181,6 +191,11 @@ export function TimelineEvent({
           )}
         </div>
       </div>
+
+      {/* PDF Viewer */}
+      {showPDF && voucher?.url && (
+        <PDFViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
+      )}
     </div>
   )
 }
