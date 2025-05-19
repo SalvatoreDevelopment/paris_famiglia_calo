@@ -47,10 +47,10 @@ export function BottomNavbar({ activeDay, setActiveDay }: BottomNavbarProps) {
           <span>Tutti</span>
         </button>
         {[
-          { id: "day1", label: "Giorno 1" },
-          { id: "day2", label: "Giorno 2" },
-          { id: "day3", label: "Giorno 3" },
-          { id: "day4", label: "Giorno 4" },
+          { id: "day1", label: "21 Maggio" },
+          { id: "day2", label: "22 Maggio" },
+          { id: "day3", label: "23 Maggio" },
+          { id: "day4", label: "24 Maggio" },
         ].map((day) => (
           <button
             key={day.id}
