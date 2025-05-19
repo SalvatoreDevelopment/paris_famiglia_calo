@@ -28,8 +28,8 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
   return (
     <div className="flex">
       <div className="flex flex-col items-center mr-4">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#2a4d7f] text-white">
-          {time.split(":")[0]}
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#2a4d7f] text-white text-sm">
+          {time}
         </div>
         {!isLast && <div className="w-0.5 h-full bg-[#2a4d7f]/20 mt-2"></div>}
       </div>
