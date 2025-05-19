@@ -24,23 +24,51 @@ export default function Home() {
   // Define getCurrentActivity as a memoized function to prevent recreating it on every render
   const getCurrentActivity = useCallback(() => {
     const now = new Date()
+
+    // Actual trip dates
+    const tripDates = {
+      day1: new Date(2025, 4, 21), // May 21, 2025
+      day2: new Date(2025, 4, 22), // May 22, 2025
+      day3: new Date(2025, 4, 23), // May 23, 2025
+      day4: new Date(2025, 4, 24), // May 24, 2025
+    }
+
+    // Check if we're in the actual trip dates
+    const today = now.getDate()
+    const month = now.getMonth()
+    const year = now.getFullYear()
+
+    // Set time to midnight for date comparison
+    const todayDate = new Date(year, month, today)
+
+    // Find if today matches any of the trip dates
+    let currentDay = ""
+
+    // Check if we're in the actual trip dates
+    if (todayDate.getTime() === tripDates.day1.getTime()) {
+      currentDay = "day1"
+    } else if (todayDate.getTime() === tripDates.day2.getTime()) {
+      currentDay = "day2"
+    } else if (todayDate.getTime() === tripDates.day3.getTime()) {
+      currentDay = "day3"
+    } else if (todayDate.getTime() === tripDates.day4.getTime()) {
+      currentDay = "day4"
+    } else {
+      // If not in actual trip dates, simulate based on current date
+      if (today % 4 === 0) {
+        currentDay = "day1"
+      } else if (today % 4 === 1) {
+        currentDay = "day2"
+      } else if (today % 4 === 2) {
+        currentDay = "day3"
+      } else {
+        currentDay = "day4"
+      }
+    }
+
     const currentHour = now.getHours()
     const currentMinute = now.getMinutes()
     const currentTimeValue = currentHour * 60 + currentMinute
-
-    // For testing purposes, use the current date to determine which day to simulate
-    const today = now.getDate()
-    let currentDay = ""
-
-    if (today % 4 === 0) {
-      currentDay = "day1"
-    } else if (today % 4 === 1) {
-      currentDay = "day2"
-    } else if (today % 4 === 2) {
-      currentDay = "day3"
-    } else {
-      currentDay = "day4"
-    }
 
     const events = dayData[currentDay]
 
@@ -89,11 +117,11 @@ export default function Home() {
   }, [getCurrentActivity]) // Only run when getCurrentActivity changes
 
   // Calculate top padding based on the presence of the current activity indicator
-  const contentPaddingTop = currentActivity ? "pt-28" : "pt-0"
+  const contentPaddingTop = "pt-28" // Always add padding for the activity indicator
 
   return (
     <main className={`flex min-h-screen flex-col items-center bg-[#f5f0e6] ${contentPaddingTop}`}>
-      {/* Current activity indicator */}
+      {/* Current activity indicator (now shows next activity) */}
       <CurrentActivityIndicator />
 
       {/* Header */}
@@ -131,11 +159,11 @@ export default function Home() {
               </li>
               <li className="flex items-start">
                 <span className="font-bold mr-2">•</span>
-                <span>Clicca su "Apri PDF voucher" per visualizzare i voucher delle attività</span>
+                <span>Clicca su "Apri PDF" per visualizzare i voucher delle attività</span>
               </li>
               <li className="flex items-start">
                 <span className="font-bold mr-2">•</span>
-                <span>L'indicatore "Sei qui" mostra l'attività corrente in base all'ora</span>
+                <span>L'indicatore in alto mostra la prossima attività in programma</span>
               </li>
               <li className="flex items-start">
                 <span className="font-bold mr-2">•</span>
