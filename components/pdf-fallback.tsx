@@ -1,51 +1,69 @@
 "use client"
 
-import { FileText, AlertTriangle, ChevronLeft } from "lucide-react"
+import { ChevronLeft, Download, FileText } from "lucide-react"
 
 type PDFFallbackProps = {
+  url: string
   title: string
   onClose: () => void
 }
 
-export function PDFFallback({ title, onClose }: PDFFallbackProps) {
+export function PDFFallback({ url, title, onClose }: PDFFallbackProps) {
+  // Download PDF
+  const downloadPDF = () => {
+    const link = document.createElement("a")
+    link.href = url
+    link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
+    link.target = "_blank"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-md w-full p-6">
-        <div className="flex flex-col items-center text-center">
-          <div className="bg-yellow-100 p-3 rounded-full mb-4">
-            <AlertTriangle className="h-8 w-8 text-yellow-600" />
-          </div>
-
-          <h2 className="text-xl font-bold text-gray-800 mb-2">PDF non disponibile</h2>
-
-          <div className="mb-6">
-            <p className="text-gray-600 mb-2">Il file PDF "{title}" non è stato trovato nella cartella /pdfs/.</p>
-            <p className="text-gray-600">
-              Assicurati di aver caricato tutti i PDF necessari come indicato nel file README.
-            </p>
-          </div>
-
-          <div className="bg-gray-100 p-4 rounded-lg w-full mb-6 text-left">
-            <h3 className="font-medium text-gray-800 mb-2 flex items-center">
-              <FileText className="h-4 w-4 mr-2" />
-              <span>Istruzioni:</span>
-            </h3>
-            <ol className="list-decimal pl-5 text-sm text-gray-700 space-y-1">
-              <li>Crea una cartella "pdfs" nella directory "public"</li>
-              <li>Aggiungi i file PDF dei voucher nella cartella</li>
-              <li>Assicurati che i nomi dei file corrispondano a quelli richiesti</li>
-              <li>Ricarica l'applicazione</li>
-            </ol>
-          </div>
-
+    <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
+      {/* Header */}
+      <div className="bg-[#2a4d7f] text-white p-4 flex justify-between items-center">
+        <div className="flex items-center">
           <button
             onClick={onClose}
-            className="w-full py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
+            className="mr-3 p-1 rounded-full hover:bg-white/20 flex items-center justify-center"
+            aria-label="Torna indietro"
           >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            <span>Torna all'itinerario</span>
+            <ChevronLeft className="h-6 w-6" />
           </button>
+          <h2 className="text-lg font-semibold truncate">{title}</h2>
         </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-6 text-center">
+        <div className="bg-gray-200 rounded-full p-6 mb-4">
+          <FileText className="h-16 w-16 text-[#2a4d7f]" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
+        <p className="text-gray-600 mb-8">
+          Il tuo dispositivo non supporta la visualizzazione diretta dei PDF nell'app.
+        </p>
+        <p className="text-gray-600 mb-8">Puoi scaricare il PDF per visualizzarlo con un'app esterna.</p>
+        <button
+          onClick={downloadPDF}
+          className="w-full max-w-xs px-6 py-3 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center mb-4"
+        >
+          <Download className="h-5 w-5 mr-2" />
+          <span>Scarica PDF</span>
+        </button>
+      </div>
+
+      {/* Bottom bar with back button */}
+      <div className="bg-white p-3 flex justify-center">
+        <button
+          onClick={onClose}
+          className="px-6 py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center hover:bg-[#2a4d7f]/90"
+        >
+          <ChevronLeft className="h-5 w-5 mr-1" />
+          <span>Torna all'itinerario</span>
+        </button>
       </div>
     </div>
   )

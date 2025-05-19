@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Download, ChevronLeft, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
-import { PDFPreloader } from "../lib/pdf-preloader"
+import { X, Download, ChevronLeft, ZoomIn, ZoomOut, RotateCw, FileText } from "lucide-react"
 
 type PDFViewerProps = {
   url: string
@@ -13,72 +12,11 @@ type PDFViewerProps = {
 export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
-  const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-
-  // Check if we're on a mobile device - improved detection
-  useEffect(() => {
-    const checkMobile = () => {
-      // More comprehensive mobile detection
-      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera
-      const isMobileDevice =
-        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|iPad|Android/i.test(
-          userAgent.toLowerCase(),
-        ) || window.innerWidth <= 768
-
-      console.log("Device detection:", { userAgent, isMobileDevice, width: window.innerWidth })
-      setIsMobile(isMobileDevice)
-    }
-
-    checkMobile()
-
-    // Add resize listener to detect orientation changes
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
-
-  // Carica il PDF dalla cache o lo scarica
-  useEffect(() => {
-    const loadPDF = async () => {
-      setLoading(true)
-
-      try {
-        // Controlla se il PDF è già nella cache
-        if (PDFPreloader.isInCache(url)) {
-          const cachedUrl = PDFPreloader.getObjectURL(url)
-          if (cachedUrl) {
-            setObjectUrl(cachedUrl)
-            return
-          }
-        }
-
-        // Altrimenti, carica il PDF
-        const pdfBlob = await PDFPreloader.getPDF(url)
-        if (pdfBlob) {
-          const blobUrl = URL.createObjectURL(pdfBlob)
-          setObjectUrl(blobUrl)
-        } else {
-          setLoadError(true)
-        }
-      } catch (error) {
-        console.error("Errore durante il caricamento del PDF:", error)
-        setLoadError(true)
-      }
-    }
-
-    loadPDF()
-
-    // Cleanup
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl)
-      }
-    }
-  }, [url])
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   // Add loading timeout
   useEffect(() => {
@@ -111,22 +49,13 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
   // Download PDF
   const downloadPDF = () => {
-    if (objectUrl) {
-      const link = document.createElement("a")
-      link.href = objectUrl
-      link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    } else {
-      // Fallback to original URL if object URL is not available
-      const link = document.createElement("a")
-      link.href = url
-      link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    }
+    const link = document.createElement("a")
+    link.href = url
+    link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
+    link.target = "_blank"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   // Handle iframe load error
@@ -182,7 +111,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
       </div>
 
       {/* PDF Content */}
-      <div className="flex-1 bg-gray-100 overflow-auto">
+      <div className="flex-1 bg-gray-100 overflow-auto" ref={containerRef}>
         {loading && !loadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="flex flex-col items-center">
@@ -217,8 +146,15 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
                 sia presente nella cartella /pdfs/.
               </p>
               <button
+                onClick={downloadPDF}
+                className="w-full px-4 py-2 bg-[#2a4d7f] text-white rounded-lg hover:bg-[#2a4d7f]/90 flex items-center justify-center mb-3"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Scarica PDF
+              </button>
+              <button
                 onClick={onClose}
-                className="w-full px-4 py-2 bg-[#2a4d7f] text-white rounded-lg hover:bg-[#2a4d7f]/90 flex items-center justify-center"
+                className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 flex items-center justify-center"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Torna all'itinerario
@@ -234,17 +170,31 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
               transition: "transform 0.3s ease",
             }}
           >
-            {objectUrl && (
-              <iframe
-                ref={iframeRef}
-                src={`${objectUrl}#toolbar=0&navpanes=0&view=FitH`}
-                className="w-full h-full"
-                onLoad={handleIframeLoad}
-                onError={handleIframeError}
-                title={title}
-                style={{ border: "none" }}
-              />
-            )}
+            {/* Utilizziamo object invece di iframe per una migliore compatibilità mobile */}
+            <object
+              data={url}
+              type="application/pdf"
+              className="w-full h-full"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+              aria-label={title}
+              style={{ border: "none" }}
+            >
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                <div className="bg-gray-200 rounded-full p-6 mb-4">
+                  <FileText className="h-16 w-16 text-[#2a4d7f]" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
+                <p className="text-gray-600 mb-8">Il tuo browser non supporta la visualizzazione diretta dei PDF.</p>
+                <button
+                  onClick={downloadPDF}
+                  className="w-full px-6 py-3 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  <span>Scarica PDF</span>
+                </button>
+              </div>
+            </object>
           </div>
         )}
       </div>
@@ -274,7 +224,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
         </button>
       </div>
 
-      {/* Bottom bar with back button */}
+      {/* Bottom bar with back button - SEMPRE VISIBILE */}
       <div className="bg-white p-3 flex justify-center">
         <button
           onClick={onClose}
