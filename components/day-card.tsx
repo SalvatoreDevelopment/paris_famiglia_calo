@@ -43,10 +43,7 @@ export function DayCard({ id, date, title, events, onOpenVoucher }: DayCardProps
               event.voucher
                 ? {
                     ...event.voucher,
-                    // Passa la funzione di apertura voucher al componente
-                    handleVoucher: event.voucher.imageUrl
-                      ? () => onOpenVoucher(event.voucher!.imageUrl!, event.voucher!.title || event.voucher!.text)
-                      : undefined,
+                    // Non passiamo più la funzione handleVoucher
                   }
                 : undefined
             }

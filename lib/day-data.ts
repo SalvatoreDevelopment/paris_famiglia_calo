@@ -7,7 +7,7 @@ export function getDayData() {
         description: "Partenza da Brindisi (BDS) con volo per Parigi Beauvais",
         voucher: {
           text: "Info Volo",
-          url: "/pdfs/volo-andata.pdf",
+          url: "#",
           details:
             "Ryanair FR1234. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
         },
@@ -34,7 +34,6 @@ export function getDayData() {
         voucher: {
           text: "Voucher Hotel",
           url: "/pdfs/hotel-campanile.pdf",
-          imageUrl: "/hotel-campanile-bercy-village-confirmation.png",
           title: "Hotel Campanile Paris Bercy Village",
           details: `Elios Tours
 0832311077
@@ -79,7 +78,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Voucher Free Tour Misteri",
           url: "/pdfs/free-tour-misteri.pdf",
-          imageUrl: "/paris-mystery-voucher.png",
           title: "Free Tour Misteri e Leggende di Parigi",
           meetingPoint: "Uscita della metro Cité",
           arrivalTime: "Arrivare 15 minuti prima",
@@ -115,7 +113,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Voucher Free Tour Montmartre",
           url: "/pdfs/free-tour-montmartre.pdf",
-          imageUrl: "/placeholder-k285k.png",
           title: "Free Tour di Montmartre",
           meetingPoint: "Place Blanche, davanti al ristorante FIVE GUYS",
           arrivalTime: "Arrivare 15 minuti prima",
@@ -139,7 +136,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Biglietti Louvre",
           url: "/pdfs/louvre.pdf",
-          imageUrl: "/placeholder-wrbr2.png",
           title: "Biglietti Museo del Louvre",
           meetingPoint: "Entrée Carrousel o Pyramide",
           details: "Portare documento d'identità",
@@ -174,7 +170,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Voucher Free Tour Quartiere Latino",
           url: "/pdfs/free-tour-quartiere-latino.pdf",
-          imageUrl: "/latin-quarter-voucher.png",
           title: "Free Tour del Quartiere Latino",
           meetingPoint: "Fontana di Saint-Michel, Place Saint Michel",
           arrivalTime: "Arrivare 15 minuti prima",
@@ -193,7 +188,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Voucher Free Tour Torre Eiffel",
           url: "/pdfs/free-tour-torre-eiffel.pdf",
-          imageUrl: "/eiffel-arc-free-tour-voucher.png",
           title: "Free Tour nei dintorni della Torre Eiffel e Arco di Trionfo",
           meetingPoint: "Av. des Champs-Élysées, 152, davanti al negozio MONTBLANC",
           arrivalTime: "Arrivare 10 minuti prima",
@@ -207,7 +201,6 @@ GPS: 48.83517 2.387617`,
         voucher: {
           text: "Voucher Crociera",
           url: "/pdfs/crociera-senna.pdf",
-          imageUrl: "/seine-river-cruise-voucher.png",
           title: "Crociera sulla Senna",
           meetingPoint: "Bateaux Parisiens, Port de la Bourdonnais, 75007 Paris",
           arrivalTime: "Presentarsi 15 minuti prima",
@@ -257,7 +250,7 @@ GPS: 48.83517 2.387617`,
         description: "Volo Paris BVA → Brindisi",
         voucher: {
           text: "Info Volo",
-          url: "/pdfs/volo-ritorno.pdf",
+          url: "#",
           details:
             "Ryanair FR5678. Presentarsi in aeroporto almeno 2 ore prima della partenza. Bagaglio a mano incluso.",
         },
