@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { ChevronDown, ChevronUp, Map, FileText, ExternalLink } from "lucide-react"
+import { ChevronDown, ChevronUp, Map, ExternalLink } from "lucide-react"
 
 type TimelineEventProps = {
   time: string
@@ -9,7 +9,6 @@ type TimelineEventProps = {
   voucher?: {
     text: string
     url?: string
-    handleVoucher?: () => void
     details?: string
     meetingPoint?: string
     arrivalTime?: string
@@ -22,6 +21,9 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
 
   // Determina se il voucher contiene informazioni di trasporto
   const isTransport = voucher?.text?.includes("Metro") || voucher?.text?.includes("Trasporto")
+
+  // Determina se è un voucher di volo
+  const isFlightVoucher = voucher?.text?.includes("Volo") || voucher?.text?.includes("volo")
 
   return (
     <div className="flex">
@@ -49,16 +51,7 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
                 {showDetails ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
               </button>
 
-              {voucher.handleVoucher && (
-                <button
-                  onClick={voucher.handleVoucher}
-                  className="inline-flex items-center px-3 py-1.5 bg-[#2a4d7f] text-white rounded-lg text-sm font-medium hover:bg-[#2a4d7f]/90 transition-colors"
-                >
-                  <FileText className="mr-1 h-4 w-4" /> Visualizza Voucher
-                </button>
-              )}
-
-              {voucher.url && voucher.url !== "#" && (
+              {voucher.url && voucher.url !== "#" && !isFlightVoucher && (
                 <a
                   href={voucher.url}
                   target="_blank"

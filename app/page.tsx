@@ -4,22 +4,11 @@ import { useState } from "react"
 import { DayCard } from "@/components/day-card"
 import { BottomNavbar } from "@/components/bottom-navbar"
 import { Notes } from "@/components/notes"
-import { PdfViewer } from "@/components/pdf-viewer"
 import { getDayData } from "@/lib/day-data"
-import { VoucherManager } from "@/components/voucher-manager"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
-  const [currentVoucher, setCurrentVoucher] = useState<{ imageUrl: string; title: string } | null>(null)
   const dayData = getDayData()
-
-  const handleOpenVoucher = (imageUrl: string, title: string) => {
-    setCurrentVoucher({ imageUrl, title })
-  }
-
-  const handleCloseVoucher = () => {
-    setCurrentVoucher(null)
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center bg-[#f5f0e6]">
@@ -37,7 +26,6 @@ export default function Home() {
             date="Mercoledì 21 Maggio"
             title="Volo, Arrivo & Free Tour Misteri"
             events={dayData.day1}
-            onOpenVoucher={handleOpenVoucher}
           />
         )}
 
@@ -47,7 +35,6 @@ export default function Home() {
             date="Giovedì 22 Maggio"
             title="Montmartre, Louvre e Passeggiata Iconica"
             events={dayData.day2}
-            onOpenVoucher={handleOpenVoucher}
           />
         )}
 
@@ -57,26 +44,14 @@ export default function Home() {
             date="Venerdì 23 Maggio"
             title="Quartiere Latino, Torre Eiffel, Crociera"
             events={dayData.day3}
-            onOpenVoucher={handleOpenVoucher}
           />
         )}
 
         {(activeDay === "all" || activeDay === "day4") && (
-          <DayCard
-            id="day4"
-            date="Sabato 24 Maggio"
-            title="Passeggiata e ritorno"
-            events={dayData.day4}
-            onOpenVoucher={handleOpenVoucher}
-          />
+          <DayCard id="day4" date="Sabato 24 Maggio" title="Passeggiata e ritorno" events={dayData.day4} />
         )}
 
-        {activeDay === "notes" && (
-          <>
-            <Notes />
-            <VoucherManager onSelectVoucher={handleOpenVoucher} />
-          </>
-        )}
+        {activeDay === "notes" && <Notes />}
         {activeDay === "all" && <Notes />}
       </section>
 
@@ -87,11 +62,6 @@ export default function Home() {
       <footer className="w-full py-4 text-center text-[#2a4d7f] bg-[#f5f0e6] border-t border-[#e06666]/20">
         <p>Creato con amore per mamma e papà ❤️</p>
       </footer>
-
-      {/* Voucher Viewer */}
-      {currentVoucher && (
-        <PdfViewer imageUrl={currentVoucher.imageUrl} title={currentVoucher.title} onClose={handleCloseVoucher} />
-      )}
     </main>
   )
 }
