@@ -88,18 +88,29 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
     let destination = ""
     let travelMode = isWalking ? "walking" : "transit"
 
-    if (voucher?.meetingPoint) {
-      destination = voucher.meetingPoint
-    } else if (description.includes("per ")) {
-      destination = description.split("per ")[1]
-    } else if (description.includes("verso ")) {
-      destination = description.split("verso ")[1]
+    // Gestione speciale per luoghi specifici
+    if (description.includes("Louvre")) {
+      destination = "Musée du Louvre, Paris, France"
+    } else if (description.includes("Torre Eiffel")) {
+      destination = "Tour Eiffel, Paris, France"
+    } else if (description.includes("Montmartre")) {
+      destination = "Montmartre, Paris, France"
+    } else if (description.includes("Quartiere Latino")) {
+      destination = "Quartier Latin, Paris, France"
+    } else if (description.includes("Champs-Élysées")) {
+      destination = "Champs-Élysées, Paris, France"
     } else if (description.includes("aeroporto")) {
       destination = "Paris Beauvais Airport, France"
       travelMode = "transit"
+    } else if (voucher?.meetingPoint) {
+      destination = voucher.meetingPoint + ", Paris, France"
+    } else if (description.includes("per ")) {
+      destination = description.split("per ")[1] + ", Paris, France"
+    } else if (description.includes("verso ")) {
+      destination = description.split("verso ")[1] + ", Paris, France"
     } else {
       // Usa una destinazione generica se non riesce a estrarre dal testo
-      destination = description
+      destination = "Paris, France"
     }
 
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=${travelMode}`
@@ -111,10 +122,10 @@ export function TimelineEvent({ time, emoji, description, voucher, isLast }: Tim
 
     if (metroStation) {
       // Se abbiamo identificato una stazione specifica
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Metro ${metroStation} Paris`)}`
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Metro ${metroStation} Paris France`)}`
     } else {
       // Cerca genericamente stazioni della metro nelle vicinanze
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Metro station near me Paris")}`
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent("Metro station Paris France")}`
     }
   }
 

@@ -135,7 +135,7 @@ export function SosButton() {
                   <button
                     onClick={() =>
                       window.open(
-                        "https://www.google.com/maps?q=Campanile+Hotel+Paris+Bercy+Village,+17+Rue+Baron+Le+Roy,+75012+Paris",
+                        "https://www.google.com/maps/dir/?api=1&destination=Campanile+Hotel+Paris+Bercy+Village,+17+Rue+Baron+Le+Roy,+75012+Paris,+France",
                         "_blank",
                       )
                     }
@@ -163,7 +163,7 @@ export function SosButton() {
                     <button
                       onClick={() =>
                         window.open(
-                          "https://www.google.com/maps?q=Ambasciata+d'Italia+a+Parigi,+51+Rue+de+Varenne,+75007+Paris",
+                          "https://www.google.com/maps/dir/?api=1&destination=Ambasciata+d'Italia+a+Parigi,+51+Rue+de+Varenne,+75007+Paris,+France",
                           "_blank",
                         )
                       }
