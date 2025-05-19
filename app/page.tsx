@@ -5,9 +5,11 @@ import { DayCard } from "@/components/day-card"
 import { BottomNavbar } from "@/components/bottom-navbar"
 import { Notes } from "@/components/notes"
 import { getDayData } from "../lib/day-data"
+import { Info } from "lucide-react"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
+  const [showHelp, setShowHelp] = useState(true)
   const dayData = getDayData()
 
   return (
@@ -17,6 +19,49 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-[#2a4d7f] mb-2">Viaggio a Parigi – 21/24 Maggio 2025</h1>
         <h2 className="text-xl text-[#e06666] mb-6">Programma per famiglia Calò</h2>
       </header>
+
+      {/* Guida all'uso */}
+      {showHelp && (
+        <div className="w-full max-w-md px-4 mb-6">
+          <div className="bg-[#2a4d7f]/10 border border-[#2a4d7f]/30 rounded-xl p-5">
+            <div className="flex items-start mb-3">
+              <div className="bg-[#2a4d7f] text-white p-2 rounded-full mr-3">
+                <Info size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-[#2a4d7f]">Come usare questa guida</h3>
+            </div>
+
+            <ul className="space-y-3 text-[#2a4d7f]">
+              <li className="flex items-start">
+                <span className="font-bold mr-2">•</span>
+                <span>Usa i pulsanti in basso per navigare tra i giorni del viaggio</span>
+              </li>
+              <li className="flex items-start">
+                <span className="font-bold mr-2">•</span>
+                <span>
+                  Clicca su "Indicazioni a piedi" o "Indicazioni trasporto" per aprire Google Maps con le indicazioni
+                  stradali
+                </span>
+              </li>
+              <li className="flex items-start">
+                <span className="font-bold mr-2">•</span>
+                <span>Clicca su "Trova stazione metro" per trovare la stazione della metropolitana più vicina</span>
+              </li>
+              <li className="flex items-start">
+                <span className="font-bold mr-2">•</span>
+                <span>Clicca su "Apri PDF voucher" per visualizzare i voucher delle attività</span>
+              </li>
+            </ul>
+
+            <button
+              onClick={() => setShowHelp(false)}
+              className="mt-4 w-full py-2 bg-[#2a4d7f] text-white rounded-lg font-medium hover:bg-[#2a4d7f]/90 transition-colors"
+            >
+              Ho capito, nascondi questa guida
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Daily Itinerary */}
       <section className="w-full max-w-md px-4 pb-24">

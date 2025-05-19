@@ -27,14 +27,14 @@ export function BottomNavbar({ activeDay, setActiveDay }: BottomNavbarProps) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#e06666]/20 shadow-lg z-10">
-      <div className="flex justify-around items-center h-16 max-w-md mx-auto">
+      <div className="flex justify-around items-center h-20 max-w-md mx-auto">
         <button
           onClick={() => handleDayClick("all")}
-          className={`flex-1 h-full flex flex-col items-center justify-center text-sm font-medium ${
+          className={`flex-1 h-full flex flex-col items-center justify-center text-base font-medium ${
             activeDay === "all" ? "text-[#e06666] border-t-2 border-[#e06666]" : "text-[#2a4d7f]"
           }`}
         >
-          <Home className="h-5 w-5 mb-1" />
+          <Home className="h-6 w-6 mb-1" />
           <span>Tutti</span>
         </button>
         {[
@@ -46,21 +46,21 @@ export function BottomNavbar({ activeDay, setActiveDay }: BottomNavbarProps) {
           <button
             key={day.id}
             onClick={() => handleDayClick(day.id)}
-            className={`flex-1 h-full flex flex-col items-center justify-center text-sm font-medium ${
+            className={`flex-1 h-full flex flex-col items-center justify-center text-base font-medium ${
               activeDay === day.id ? "text-[#e06666] border-t-2 border-[#e06666]" : "text-[#2a4d7f]"
             }`}
           >
-            <Calendar className="h-5 w-5 mb-1" />
+            <Calendar className="h-6 w-6 mb-1" />
             <span>{day.label}</span>
           </button>
         ))}
         <button
           onClick={() => handleDayClick("notes")}
-          className={`flex-1 h-full flex flex-col items-center justify-center text-sm font-medium ${
+          className={`flex-1 h-full flex flex-col items-center justify-center text-base font-medium ${
             activeDay === "notes" ? "text-[#e06666] border-t-2 border-[#e06666]" : "text-[#2a4d7f]"
           }`}
         >
-          <FileText className="h-5 w-5 mb-1" />
+          <FileText className="h-6 w-6 mb-1" />
           <span>Note</span>
         </button>
       </div>
