@@ -9,7 +9,7 @@ import { CurrentActivityIndicator } from "../components/current-activity-indicat
 import { getDayData } from "../lib/day-data"
 import { Info } from "lucide-react"
 // Aggiungi l'import per il componente CameraTranslator
-import { CameraTranslator } from "../components/camera-translator"
+// import { CameraTranslator } from "../components/camera-translator"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
@@ -271,7 +271,7 @@ export default function Home() {
       </section>
 
       {/* Aggiungi il componente CameraTranslator prima del SosButton */}
-      <CameraTranslator />
+      {/* <CameraTranslator /> */}
       {/* SOS Button */}
       <SosButton />
 
