@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle, ExternalLink } from "lucide-react"
+import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle } from "lucide-react"
 import { createWorker, type Tesseract } from "tesseract.js"
 
 // Dizionario semplificato francese-italiano per parole comuni
@@ -429,6 +429,22 @@ export function CameraTranslator() {
     }
   }
 
+  // Render Google Lens logo
+  const GoogleLensLogo = () => (
+    <div className="flex items-center">
+      <div className="flex-shrink-0 w-6 h-6 mr-2 relative">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-5 h-5 rounded-full border-2 border-[#4285F4]"></div>
+          <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-[#4285F4] rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute top-0 right-0 w-2 h-2 bg-[#EA4335] rounded-full"></div>
+          <div className="absolute bottom-0 right-0 w-2 h-2 bg-[#FBBC05] rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-2 h-2 bg-[#34A853] rounded-full"></div>
+        </div>
+      </div>
+      <span>Google Lens</span>
+    </div>
+  )
+
   return (
     <>
       {/* Camera button */}
@@ -524,26 +540,52 @@ export function CameraTranslator() {
                       </div>
                     </div>
 
+                    {/* Google Lens button with logo */}
                     <button
                       onClick={openGoogleLens}
-                      className="w-full py-3 px-4 bg-[#e06666] text-white rounded-lg flex items-center justify-center hover:bg-[#e06666]/90"
+                      className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-50 relative overflow-hidden"
                     >
-                      <ExternalLink className="h-5 w-5 mr-2" />
-                      <span>Apri Google Lens (consigliato)</span>
+                      {/* Google Lens logo */}
+                      <div className="flex items-center">
+                        <svg width="24" height="24" viewBox="0 0 24 24" className="mr-2">
+                          <path
+                            d="M12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18Z"
+                            fill="#4285F4"
+                          />
+                          <path
+                            d="M12 11C11.45 11 11 11.45 11 12C11 12.55 11.45 13 12 13C12.55 13 13 12.55 13 12C13 11.45 12.55 11 12 11Z"
+                            fill="#4285F4"
+                          />
+                          <circle cx="17" cy="7" r="2" fill="#EA4335" />
+                          <circle cx="17" cy="17" r="2" fill="#FBBC05" />
+                          <circle cx="7" cy="17" r="2" fill="#34A853" />
+                          <circle cx="7" cy="7" r="2" fill="#4285F4" />
+                        </svg>
+                        <span className="font-medium">Google Lens</span>
+                      </div>
+                      <span className="absolute top-0 right-0 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-bl-md">
+                        Consigliato
+                      </span>
                     </button>
 
-                    <p className="text-xs text-gray-500 text-center mt-2">
-                      Google Lens offre un riconoscimento più preciso e traduzione migliore
-                    </p>
-                  </div>
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800">
+                      <div className="font-medium mb-1">Perché Google Lens?</div>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Riconoscimento testo più preciso</li>
+                        <li>Traduzione di alta qualità</li>
+                        <li>Funziona con testi complessi e menu</li>
+                        <li>Supporta più lingue</li>
+                      </ul>
+                    </div>
 
-                  <button
-                    onClick={handleRetake}
-                    className="w-full mt-4 py-2 border border-gray-300 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-100"
-                  >
-                    <RotateCcw className="h-4 w-4 mr-1" />
-                    <span>Scatta nuova foto</span>
-                  </button>
+                    <button
+                      onClick={handleRetake}
+                      className="w-full mt-4 py-2 border border-gray-300 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-100"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-1" />
+                      <span>Scatta nuova foto</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -617,11 +659,25 @@ export function CameraTranslator() {
                   )}
 
                   <div className="flex justify-between">
+                    {/* Google Lens button with logo */}
                     <button
                       onClick={openGoogleLens}
-                      className="flex items-center px-3 py-2 bg-[#e06666] text-white rounded-lg hover:bg-[#e06666]/90"
+                      className="flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-50"
                     >
-                      <ExternalLink className="h-4 w-4 mr-1" />
+                      <svg width="20" height="20" viewBox="0 0 24 24" className="mr-1.5">
+                        <path
+                          d="M12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C16.42 20 20 16.42 20 12C20 7.58 16.42 4 12 4ZM12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C15.31 6 18 8.69 18 12C18 15.31 15.31 18 12 18Z"
+                          fill="#4285F4"
+                        />
+                        <path
+                          d="M12 11C11.45 11 11 11.45 11 12C11 12.55 11.45 13 12 13C12.55 13 13 12.55 13 12C13 11.45 12.55 11 12 11Z"
+                          fill="#4285F4"
+                        />
+                        <circle cx="17" cy="7" r="2" fill="#EA4335" />
+                        <circle cx="17" cy="17" r="2" fill="#FBBC05" />
+                        <circle cx="7" cy="17" r="2" fill="#34A853" />
+                        <circle cx="7" cy="7" r="2" fill="#4285F4" />
+                      </svg>
                       <span>Google Lens</span>
                     </button>
 
