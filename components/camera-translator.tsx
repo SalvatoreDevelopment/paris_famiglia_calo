@@ -1,30 +1,185 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, X, Languages, Copy, Check, RotateCcw } from "lucide-react"
+import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle } from "lucide-react"
+import { createWorker, type Tesseract } from "tesseract.js"
+
+// Dizionario semplificato francese-italiano per parole comuni
+const simpleDictionary: Record<string, string> = {
+  bonjour: "buongiorno",
+  merci: "grazie",
+  "au revoir": "arrivederci",
+  "s'il vous plaît": "per favore",
+  entrée: "ingresso/entrata",
+  sortie: "uscita",
+  fermé: "chiuso",
+  ouvert: "aperto",
+  toilettes: "bagni",
+  restaurant: "ristorante",
+  menu: "menu",
+  prix: "prezzo",
+  ticket: "biglietto",
+  métro: "metropolitana",
+  bus: "autobus",
+  train: "treno",
+  gare: "stazione",
+  hôtel: "hotel",
+  chambre: "camera",
+  "petit déjeuner": "colazione",
+  déjeuner: "pranzo",
+  dîner: "cena",
+  eau: "acqua",
+  vin: "vino",
+  pain: "pane",
+  fromage: "formaggio",
+  viande: "carne",
+  poisson: "pesce",
+  légumes: "verdure",
+  fruits: "frutta",
+  dessert: "dessert",
+  café: "caffè",
+  thé: "tè",
+  lait: "latte",
+  sucre: "zucchero",
+  sel: "sale",
+  poivre: "pepe",
+  chaud: "caldo",
+  froid: "freddo",
+  gauche: "sinistra",
+  droite: "destra",
+  "tout droit": "dritto",
+  près: "vicino",
+  loin: "lontano",
+  ici: "qui",
+  là: "là",
+  "aujourd'hui": "oggi",
+  demain: "domani",
+  hier: "ieri",
+  matin: "mattina",
+  "après-midi": "pomeriggio",
+  soir: "sera",
+  nuit: "notte",
+  heure: "ora",
+  minute: "minuto",
+  jour: "giorno",
+  semaine: "settimana",
+  mois: "mese",
+  année: "anno",
+  gratuit: "gratuito",
+  payant: "a pagamento",
+  interdit: "vietato",
+  danger: "pericolo",
+  attention: "attenzione",
+  information: "informazione",
+  aide: "aiuto",
+  police: "polizia",
+  hôpital: "ospedale",
+  pharmacie: "farmacia",
+  médecin: "medico",
+  urgence: "emergenza",
+  téléphone: "telefono",
+  internet: "internet",
+  wifi: "wifi",
+  musée: "museo",
+  église: "chiesa",
+  cathédrale: "cattedrale",
+  château: "castello",
+  parc: "parco",
+  jardin: "giardino",
+  plage: "spiaggia",
+  montagne: "montagna",
+  rivière: "fiume",
+  lac: "lago",
+  mer: "mare",
+  pont: "ponte",
+  rue: "via/strada",
+  avenue: "viale",
+  place: "piazza",
+  marché: "mercato",
+  magasin: "negozio",
+  supermarché: "supermercato",
+  boulangerie: "panetteria",
+  pâtisserie: "pasticceria",
+  boucherie: "macelleria",
+  poissonnerie: "pescheria",
+  librairie: "libreria",
+  banque: "banca",
+  poste: "posta",
+  cinéma: "cinema",
+  théâtre: "teatro",
+  concert: "concerto",
+  exposition: "esposizione",
+  festival: "festival",
+  spectacle: "spettacolo",
+  match: "partita",
+  stade: "stadio",
+  piscine: "piscina",
+  gymnase: "palestra",
+}
 
 export function CameraTranslator() {
   const [isOpen, setIsOpen] = useState(false)
   const [cameraActive, setCameraActive] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
+  const [extractedText, setExtractedText] = useState<string | null>(null)
   const [translatedText, setTranslatedText] = useState<string | null>(null)
-  const [isTranslating, setIsTranslating] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [processingStatus, setProcessingStatus] = useState("")
   const [hasCopied, setHasCopied] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [permissionDenied, setPermissionDenied] = useState(false)
+  const [ocrProgress, setOcrProgress] = useState(0)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const workerRef = useRef<Tesseract.Worker | null>(null)
+
+  // Initialize Tesseract worker
+  useEffect(() => {
+    if (isOpen && !workerRef.current) {
+      const initWorker = async () => {
+        try {
+          const worker = await createWorker({
+            logger: (m) => {
+              if (m.status === "recognizing text") {
+                setOcrProgress(Math.round(m.progress * 100))
+              }
+            },
+          })
+
+          // Load French language data
+          await worker.loadLanguage("fra")
+          await worker.initialize("fra")
+          workerRef.current = worker
+        } catch (error) {
+          console.error("Failed to initialize Tesseract worker:", error)
+        }
+      }
+
+      initWorker()
+    }
+
+    return () => {
+      // Terminate worker when component unmounts
+      if (workerRef.current) {
+        workerRef.current.terminate()
+        workerRef.current = null
+      }
+    }
+  }, [isOpen])
 
   // Open the camera translator
   const handleOpen = () => {
     setIsOpen(true)
     setCapturedImage(null)
+    setExtractedText(null)
     setTranslatedText(null)
     setCameraError(null)
     setPermissionDenied(false)
     setHasCopied(false)
+    setIsProcessing(false)
+    setOcrProgress(0)
   }
 
   // Close the camera translator and clean up
@@ -33,6 +188,7 @@ export function CameraTranslator() {
     setIsOpen(false)
     setCameraActive(false)
     setCapturedImage(null)
+    setExtractedText(null)
     setTranslatedText(null)
   }
 
@@ -119,44 +275,126 @@ export function CameraTranslator() {
         // Stop the camera after capturing
         stopCamera()
 
-        // Simulate translation process
-        simulateTranslation()
+        // Process the image with OCR
+        processImageWithOCR(canvas)
       }
     }
+  }
+
+  // Process the image with Tesseract OCR
+  const processImageWithOCR = async (canvas: HTMLCanvasElement) => {
+    setIsProcessing(true)
+    setProcessingStatus("Riconoscimento testo...")
+    setOcrProgress(0)
+
+    try {
+      if (!workerRef.current) {
+        // Initialize worker if not already done
+        const worker = await createWorker({
+          logger: (m) => {
+            if (m.status === "recognizing text") {
+              setOcrProgress(Math.round(m.progress * 100))
+            }
+          },
+        })
+
+        await worker.loadLanguage("fra")
+        await worker.initialize("fra")
+        workerRef.current = worker
+      }
+
+      // Recognize text in the image
+      const { data } = await workerRef.current.recognize(canvas)
+
+      // Get the recognized text
+      const text = data.text.trim()
+      setExtractedText(text)
+
+      // Translate the text
+      setProcessingStatus("Traduzione in corso...")
+      await translateText(text)
+    } catch (error) {
+      console.error("OCR processing error:", error)
+      setTranslatedText("Errore nel riconoscimento del testo. Prova a scattare un'altra foto con testo più chiaro.")
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Simple translation function using the dictionary
+  const translateText = async (text: string) => {
+    // Wait a moment to simulate processing
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    if (!text || text.length === 0) {
+      setTranslatedText("Nessun testo riconosciuto. Prova a scattare un'altra foto con testo più chiaro.")
+      return
+    }
+
+    // Split the text into words and phrases
+    const words = text.toLowerCase().split(/\s+/)
+    const phrases: string[] = []
+
+    // Try to match multi-word phrases first (up to 3 words)
+    for (let i = 0; i < words.length; i++) {
+      let matched = false
+
+      // Try 3-word phrases
+      if (i + 2 < words.length) {
+        const phrase3 = `${words[i]} ${words[i + 1]} ${words[i + 2]}`
+        if (simpleDictionary[phrase3]) {
+          phrases.push(simpleDictionary[phrase3])
+          i += 2
+          matched = true
+          continue
+        }
+      }
+
+      // Try 2-word phrases
+      if (i + 1 < words.length) {
+        const phrase2 = `${words[i]} ${words[i + 1]}`
+        if (simpleDictionary[phrase2]) {
+          phrases.push(simpleDictionary[phrase2])
+          i += 1
+          matched = true
+          continue
+        }
+      }
+
+      // Try single words
+      if (simpleDictionary[words[i]]) {
+        phrases.push(simpleDictionary[words[i]])
+        matched = true
+      } else {
+        // Keep original word if no translation found
+        phrases.push(words[i])
+      }
+    }
+
+    // Join the translated phrases
+    let translated = phrases.join(" ")
+
+    // If we couldn't translate much, provide a fallback message
+    const originalWords = text.split(/\s+/).length
+    const translatedWords = Object.keys(simpleDictionary).filter((word) =>
+      text.toLowerCase().includes(word.toLowerCase()),
+    ).length
+
+    if (translatedWords < originalWords * 0.3) {
+      translated += "\n\n⚠️ Traduzione limitata. Riconosciute solo alcune parole."
+    }
+
+    setTranslatedText(translated)
   }
 
   // Reset and restart the camera
   const handleRetake = () => {
     setCapturedImage(null)
+    setExtractedText(null)
     setTranslatedText(null)
     setHasCopied(false)
+    setOcrProgress(0)
     startCamera()
-  }
-
-  // Simulate the OCR and translation process
-  const simulateTranslation = () => {
-    setIsTranslating(true)
-
-    // Simulate processing delay
-    setTimeout(() => {
-      // Sample translations based on common French phrases a tourist might encounter
-      const sampleTranslations = [
-        "Benvenuti al ristorante. Il menu di oggi include specialità regionali.",
-        "Attenzione: Stazione della metropolitana chiusa per lavori fino alle 18:00.",
-        "Museo aperto dalle 9:00 alle 18:00. Ultimo ingresso alle 17:00.",
-        "Vietato l'accesso. Area riservata al personale autorizzato.",
-        "Offerta speciale: acquista un biglietto, il secondo è gratuito!",
-        "Informazioni turistiche: chiedere all'interno.",
-        "Toilette per i clienti. Chiedere la chiave al bancone.",
-        "Uscita di emergenza. Non bloccare il passaggio.",
-        "Orari dei treni: Parigi - Versailles ogni 30 minuti.",
-      ]
-
-      // Select a random translation from the sample list
-      const randomIndex = Math.floor(Math.random() * sampleTranslations.length)
-      setTranslatedText(sampleTranslations[randomIndex])
-      setIsTranslating(false)
-    }, 2000) // 2 second delay to simulate processing
   }
 
   // Copy translated text to clipboard
@@ -233,7 +471,13 @@ export function CameraTranslator() {
 
             {/* Video feed */}
             {!permissionDenied && !cameraError && !capturedImage && (
-              <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" />
+              <div className="relative w-full h-full">
+                <video ref={videoRef} autoPlay playsInline className="h-full w-full object-cover" />
+                <div className="absolute inset-0 pointer-events-none border-2 border-white/50 m-8 rounded-lg"></div>
+                <div className="absolute bottom-20 left-0 right-0 text-center text-white bg-black/50 py-2">
+                  Inquadra il testo da tradurre
+                </div>
+              </div>
             )}
 
             {/* Canvas for capturing images (hidden) */}
@@ -257,27 +501,54 @@ export function CameraTranslator() {
                       <Languages className="h-5 w-5 text-[#2a4d7f] mr-2" />
                       <h3 className="font-medium text-[#2a4d7f]">Traduzione</h3>
                     </div>
-                    <button
-                      onClick={copyToClipboard}
-                      disabled={!translatedText || isTranslating}
-                      className="p-1.5 rounded-full hover:bg-gray-100 disabled:opacity-50"
-                      aria-label="Copia testo"
-                    >
-                      {hasCopied ? (
-                        <Check className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <Copy className="h-5 w-5 text-gray-600" />
-                      )}
-                    </button>
+                    {translatedText && !isProcessing && (
+                      <button
+                        onClick={copyToClipboard}
+                        className="p-1.5 rounded-full hover:bg-gray-100"
+                        aria-label="Copia testo"
+                      >
+                        {hasCopied ? (
+                          <Check className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <Copy className="h-5 w-5 text-gray-600" />
+                        )}
+                      </button>
+                    )}
                   </div>
 
-                  {isTranslating ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#2a4d7f]"></div>
-                      <span className="ml-2 text-gray-600">Traduzione in corso...</span>
+                  {isProcessing ? (
+                    <div className="py-4">
+                      <div className="mb-2 text-gray-600 text-sm flex items-center">
+                        <span>{processingStatus}</span>
+                        {ocrProgress > 0 && <span className="ml-2">{ocrProgress}%</span>}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div className="bg-[#2a4d7f] h-2.5 rounded-full" style={{ width: `${ocrProgress}%` }}></div>
+                      </div>
                     </div>
                   ) : (
-                    <p className="text-gray-800 mb-4">{translatedText}</p>
+                    <>
+                      {extractedText && (
+                        <div className="mb-3">
+                          <div className="text-xs text-gray-500 mb-1">Testo riconosciuto:</div>
+                          <div className="text-sm text-gray-600 bg-gray-100 p-2 rounded-md max-h-20 overflow-y-auto">
+                            {extractedText}
+                          </div>
+                        </div>
+                      )}
+
+                      {translatedText ? (
+                        <div className="mb-4">
+                          <div className="text-xs text-gray-500 mb-1">Traduzione:</div>
+                          <div className="text-gray-800 whitespace-pre-line">{translatedText}</div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center py-4 text-yellow-600">
+                          <AlertCircle className="h-5 w-5 mr-2" />
+                          <span>Nessun testo riconosciuto</span>
+                        </div>
+                      )}
+                    </>
                   )}
 
                   <div className="flex justify-end">
