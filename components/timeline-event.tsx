@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ChevronDown, ChevronUp, MapPin, Clock, ExternalLink, FileText, Map } from "lucide-react"
-import { PDFViewer } from "./pdf-viewer"
-import { PDFFallback } from "./pdf-fallback"
+import { PDFImageViewer } from "./pdf-image-viewer"
 
 type VoucherProps = {
   text?: string
@@ -42,14 +41,6 @@ export function TimelineEvent({
 }: TimelineEventProps) {
   const [expanded, setExpanded] = useState(false)
   const [showPDF, setShowPDF] = useState(false)
-  const [useFallback, setUseFallback] = useState(false)
-
-  // Verifica se il dispositivo è iOS
-  useEffect(() => {
-    // iOS ha problemi noti con la visualizzazione dei PDF in object/iframe
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-    setUseFallback(isIOS)
-  }, [])
 
   // Function to open Google Maps with walking directions
   const openWalkingDirections = () => {
@@ -201,14 +192,10 @@ export function TimelineEvent({
         </div>
       </div>
 
-      {/* PDF Viewer o Fallback */}
-      {showPDF &&
-        voucher?.url &&
-        (useFallback ? (
-          <PDFFallback url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
-        ) : (
-          <PDFViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
-        ))}
+      {/* PDF Image Viewer */}
+      {showPDF && voucher?.url && (
+        <PDFImageViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
+      )}
     </div>
   )
 }
