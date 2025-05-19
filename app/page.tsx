@@ -6,6 +6,7 @@ import { BottomNavbar } from "@/components/bottom-navbar"
 import { Notes } from "@/components/notes"
 import { PdfViewer } from "@/components/pdf-viewer"
 import { getDayData } from "@/lib/day-data"
+import { VoucherManager } from "@/components/voucher-manager"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
@@ -70,7 +71,12 @@ export default function Home() {
           />
         )}
 
-        {activeDay === "notes" && <Notes />}
+        {activeDay === "notes" && (
+          <>
+            <Notes />
+            <VoucherManager onSelectVoucher={handleOpenVoucher} />
+          </>
+        )}
         {activeDay === "all" && <Notes />}
       </section>
 
