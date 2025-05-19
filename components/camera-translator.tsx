@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle } from "lucide-react"
+import { Camera, X, Languages, Copy, Check, RotateCcw, AlertCircle, ExternalLink } from "lucide-react"
 import { createWorker, type Tesseract } from "tesseract.js"
 
 // Dizionario semplificato francese-italiano per parole comuni
@@ -129,6 +129,7 @@ export function CameraTranslator() {
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [ocrProgress, setOcrProgress] = useState(0)
+  const [showOcrOptions, setShowOcrOptions] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -180,6 +181,7 @@ export function CameraTranslator() {
     setHasCopied(false)
     setIsProcessing(false)
     setOcrProgress(0)
+    setShowOcrOptions(false)
   }
 
   // Close the camera translator and clean up
@@ -275,8 +277,8 @@ export function CameraTranslator() {
         // Stop the camera after capturing
         stopCamera()
 
-        // Process the image with OCR
-        processImageWithOCR(canvas)
+        // Show OCR options instead of processing immediately
+        setShowOcrOptions(true)
       }
     }
   }
@@ -286,6 +288,7 @@ export function CameraTranslator() {
     setIsProcessing(true)
     setProcessingStatus("Riconoscimento testo...")
     setOcrProgress(0)
+    setShowOcrOptions(false)
 
     try {
       if (!workerRef.current) {
@@ -318,6 +321,19 @@ export function CameraTranslator() {
       setTranslatedText("Errore nel riconoscimento del testo. Prova a scattare un'altra foto con testo più chiaro.")
     } finally {
       setIsProcessing(false)
+    }
+  }
+
+  // Open Google Lens
+  const openGoogleLens = () => {
+    // Google Lens URL
+    window.open("https://lens.google.com", "_blank")
+  }
+
+  // Process with internal OCR
+  const processWithInternalOCR = () => {
+    if (canvasRef.current) {
+      processImageWithOCR(canvasRef.current)
     }
   }
 
@@ -394,6 +410,7 @@ export function CameraTranslator() {
     setTranslatedText(null)
     setHasCopied(false)
     setOcrProgress(0)
+    setShowOcrOptions(false)
     startCamera()
   }
 
@@ -483,8 +500,56 @@ export function CameraTranslator() {
             {/* Canvas for capturing images (hidden) */}
             <canvas ref={canvasRef} className="hidden" />
 
+            {/* OCR Options */}
+            {showOcrOptions && capturedImage && (
+              <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-4">
+                <div className="bg-white rounded-lg p-5 w-full max-w-sm">
+                  <h3 className="text-lg font-bold text-[#2a4d7f] mb-4 text-center">Scegli metodo di traduzione</h3>
+
+                  <div className="space-y-4">
+                    <button
+                      onClick={processWithInternalOCR}
+                      className="w-full py-3 px-4 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center hover:bg-[#2a4d7f]/90"
+                    >
+                      <Camera className="h-5 w-5 mr-2" />
+                      <span>Usa OCR integrato (base)</span>
+                    </button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-white text-gray-500">oppure</span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={openGoogleLens}
+                      className="w-full py-3 px-4 bg-[#e06666] text-white rounded-lg flex items-center justify-center hover:bg-[#e06666]/90"
+                    >
+                      <ExternalLink className="h-5 w-5 mr-2" />
+                      <span>Apri Google Lens (consigliato)</span>
+                    </button>
+
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      Google Lens offre un riconoscimento più preciso e traduzione migliore
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handleRetake}
+                    className="w-full mt-4 py-2 border border-gray-300 text-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-100"
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" />
+                    <span>Scatta nuova foto</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Captured image */}
-            {capturedImage && (
+            {capturedImage && !showOcrOptions && (
               <div className="relative w-full h-full flex flex-col">
                 <div className="flex-1 overflow-hidden">
                   <img
@@ -551,7 +616,15 @@ export function CameraTranslator() {
                     </>
                   )}
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-between">
+                    <button
+                      onClick={openGoogleLens}
+                      className="flex items-center px-3 py-2 bg-[#e06666] text-white rounded-lg hover:bg-[#e06666]/90"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      <span>Google Lens</span>
+                    </button>
+
                     <button
                       onClick={handleRetake}
                       className="flex items-center px-3 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
