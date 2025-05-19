@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { X, Download, ExternalLink, ChevronLeft, FileText } from "lucide-react"
 
 type PDFViewerProps = {
@@ -13,19 +13,51 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Check if we're on a mobile device
+  // Check if we're on a mobile device - improved detection
   useEffect(() => {
     const checkMobile = () => {
+      // More comprehensive mobile detection
       const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-        userAgent.toLowerCase(),
-      )
+      const isMobileDevice =
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet|iPad|Android/i.test(
+          userAgent.toLowerCase(),
+        ) || window.innerWidth <= 768
+
+      console.log("Device detection:", { userAgent, isMobileDevice, width: window.innerWidth })
       setIsMobile(isMobileDevice)
+
+      // Force mobile view for this specific issue
+      if (isMobileDevice) {
+        // Immediately stop loading if we're on mobile
+        setLoading(false)
+      }
     }
 
     checkMobile()
+
+    // Add resize listener to detect orientation changes
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
   }, [])
+
+  // Add loading timeout
+  useEffect(() => {
+    // Set a timeout to stop the loading indicator after 5 seconds
+    loadingTimeoutRef.current = setTimeout(() => {
+      if (loading) {
+        console.log("Loading timeout reached")
+        setLoading(false)
+      }
+    }, 5000)
+
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current)
+      }
+    }
+  }, [loading])
 
   // Handle escape key to close the viewer
   useEffect(() => {
@@ -56,10 +88,78 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
   // Handle iframe load error
   const handleIframeError = () => {
+    console.log("Iframe error detected")
     setLoadError(true)
     setLoading(false)
   }
 
+  // Handle iframe load success
+  const handleIframeLoad = () => {
+    console.log("Iframe loaded successfully")
+    setLoading(false)
+  }
+
+  // Render mobile view directly without waiting for loading
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
+        {/* Header */}
+        <div className="bg-[#2a4d7f] text-white p-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <button
+              onClick={onClose}
+              className="mr-3 p-1 rounded-full hover:bg-white/20 flex items-center justify-center"
+              aria-label="Torna indietro"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <h2 className="text-lg font-semibold truncate">{title}</h2>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20" aria-label="Chiudi">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Mobile PDF View */}
+        <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-6 text-center">
+          <div className="bg-gray-200 rounded-full p-6 mb-4">
+            <FileText className="h-16 w-16 text-[#2a4d7f]" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
+          <p className="text-gray-600 mb-8">Il file PDF è pronto per essere visualizzato o scaricato.</p>
+          <div className="flex flex-col w-full space-y-3">
+            <button
+              onClick={openInNewTab}
+              className="w-full px-6 py-3 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
+            >
+              <ExternalLink className="h-5 w-5 mr-2" />
+              <span>Apri PDF</span>
+            </button>
+            <button
+              onClick={downloadPDF}
+              className="w-full px-6 py-3 bg-[#e06666] text-white rounded-lg flex items-center justify-center"
+            >
+              <Download className="h-5 w-5 mr-2" />
+              <span>Scarica PDF</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Bottom bar with back button */}
+        <div className="bg-white p-3 flex justify-center">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center hover:bg-[#2a4d7f]/90"
+          >
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            <span>Torna all'itinerario</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Desktop view
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
       {/* Header */}
@@ -102,33 +202,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
           </div>
         )}
 
-        {/* Mobile PDF View */}
-        {isMobile ? (
-          <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-            <div className="bg-gray-200 rounded-full p-6 mb-4">
-              <FileText className="h-16 w-16 text-[#2a4d7f]" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-            <p className="text-gray-600 mb-8">Il file PDF è pronto per essere visualizzato o scaricato.</p>
-            <div className="flex flex-col w-full space-y-3">
-              <button
-                onClick={openInNewTab}
-                className="w-full px-6 py-3 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
-              >
-                <ExternalLink className="h-5 w-5 mr-2" />
-                <span>Apri PDF</span>
-              </button>
-              <button
-                onClick={downloadPDF}
-                className="w-full px-6 py-3 bg-[#e06666] text-white rounded-lg flex items-center justify-center"
-              >
-                <Download className="h-5 w-5 mr-2" />
-                <span>Scarica PDF</span>
-              </button>
-            </div>
-          </div>
-        ) : // Desktop PDF View
-        loadError ? (
+        {loadError ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="max-w-md p-6 text-center">
               <div className="text-red-500 mb-4 flex justify-center">
@@ -174,7 +248,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
           <iframe
             src={`${url}#toolbar=0&navpanes=0`}
             className="w-full h-full"
-            onLoad={() => setLoading(false)}
+            onLoad={handleIframeLoad}
             onError={handleIframeError}
             title={title}
           />

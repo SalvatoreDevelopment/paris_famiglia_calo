@@ -3,8 +3,6 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp, MapPin, Clock, ExternalLink, FileText, Map } from "lucide-react"
 import { PDFViewer } from "./pdf-viewer"
-// Importiamo il componente PDFFallback
-import { PDFFallback } from "./pdf-fallback"
 
 type VoucherProps = {
   text?: string
@@ -43,7 +41,6 @@ export function TimelineEvent({
 }: TimelineEventProps) {
   const [expanded, setExpanded] = useState(false)
   const [showPDF, setShowPDF] = useState(false)
-  // Aggiungiamo uno stato per tracciare gli errori di PDF
   const [pdfError, setPdfError] = useState(false)
 
   // Function to open Google Maps with walking directions
@@ -67,30 +64,12 @@ export function TimelineEvent({
     window.open("https://www.google.com/maps/search/metro+station+near+me", "_blank")
   }
 
-  // Modifichiamo la funzione handleVoucherClick
-  // Function to check if PDF exists and handle voucher click
+  // Function to handle voucher click - simplified to avoid fetch issues on mobile
   const handleVoucherClick = () => {
     if (voucher?.url) {
-      // Check if the PDF exists by sending a HEAD request
-      fetch(voucher.url, { method: "HEAD" })
-        .then((response) => {
-          if (response.ok) {
-            // PDF exists, show it
-            setPdfError(false)
-            setShowPDF(true)
-          } else {
-            // PDF doesn't exist, show fallback
-            setPdfError(true)
-            setShowPDF(true)
-          }
-        })
-        .catch((error) => {
-          // Network error or other issue
-          console.error("Errore nel controllo del PDF:", error)
-          // Show fallback
-          setPdfError(true)
-          setShowPDF(true)
-        })
+      // On mobile, we'll just show the PDF viewer directly
+      // without checking if the PDF exists first
+      setShowPDF(true)
     }
   }
 
@@ -216,22 +195,10 @@ export function TimelineEvent({
         </div>
       </div>
 
-      {/* Modifichiamo la parte finale del componente dove mostriamo il PDF Viewer */}
-      {/* Sostituiamo: */}
       {/* PDF Viewer */}
-      {showPDF &&
-        voucher?.url &&
-        (pdfError ? (
-          <PDFFallback
-            title={voucher.title || description}
-            onClose={() => {
-              setShowPDF(false)
-              setPdfError(false)
-            }}
-          />
-        ) : (
-          <PDFViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
-        ))}
+      {showPDF && voucher?.url && (
+        <PDFViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
+      )}
     </div>
   )
 }
