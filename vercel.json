@@ -3,6 +3,5 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "public": true,
-  "nodeVersion": "18.x"
+  "public": true
 }
