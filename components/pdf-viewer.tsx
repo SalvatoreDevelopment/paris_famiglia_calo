@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { X, Download, ExternalLink, ChevronLeft, FileText } from "lucide-react"
+import { X, Download, ChevronLeft, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
 
 type PDFViewerProps = {
   url: string
@@ -13,7 +13,10 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [scale, setScale] = useState(1)
+  const [rotation, setRotation] = useState(0)
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Check if we're on a mobile device - improved detection
   useEffect(() => {
@@ -27,12 +30,6 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
 
       console.log("Device detection:", { userAgent, isMobileDevice, width: window.innerWidth })
       setIsMobile(isMobileDevice)
-
-      // Force mobile view for this specific issue
-      if (isMobileDevice) {
-        // Immediately stop loading if we're on mobile
-        setLoading(false)
-      }
     }
 
     checkMobile()
@@ -71,11 +68,6 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
     return () => window.removeEventListener("keydown", handleEscape)
   }, [onClose])
 
-  // Open in new tab
-  const openInNewTab = () => {
-    window.open(url, "_blank")
-  }
-
   // Download PDF
   const downloadPDF = () => {
     const link = document.createElement("a")
@@ -99,67 +91,21 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
     setLoading(false)
   }
 
-  // Render mobile view directly without waiting for loading
-  if (isMobile) {
-    return (
-      <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
-        {/* Header */}
-        <div className="bg-[#2a4d7f] text-white p-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <button
-              onClick={onClose}
-              className="mr-3 p-1 rounded-full hover:bg-white/20 flex items-center justify-center"
-              aria-label="Torna indietro"
-            >
-              <ChevronLeft className="h-6 w-6" />
-            </button>
-            <h2 className="text-lg font-semibold truncate">{title}</h2>
-          </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20" aria-label="Chiudi">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        {/* Mobile PDF View */}
-        <div className="flex-1 bg-gray-100 flex flex-col items-center justify-center p-6 text-center">
-          <div className="bg-gray-200 rounded-full p-6 mb-4">
-            <FileText className="h-16 w-16 text-[#2a4d7f]" />
-          </div>
-          <h3 className="text-xl font-bold text-gray-800 mb-2">{title}</h3>
-          <p className="text-gray-600 mb-8">Il file PDF è pronto per essere visualizzato o scaricato.</p>
-          <div className="flex flex-col w-full space-y-3">
-            <button
-              onClick={openInNewTab}
-              className="w-full px-6 py-3 bg-[#2a4d7f] text-white rounded-lg flex items-center justify-center"
-            >
-              <ExternalLink className="h-5 w-5 mr-2" />
-              <span>Apri PDF</span>
-            </button>
-            <button
-              onClick={downloadPDF}
-              className="w-full px-6 py-3 bg-[#e06666] text-white rounded-lg flex items-center justify-center"
-            >
-              <Download className="h-5 w-5 mr-2" />
-              <span>Scarica PDF</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Bottom bar with back button */}
-        <div className="bg-white p-3 flex justify-center">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center hover:bg-[#2a4d7f]/90"
-          >
-            <ChevronLeft className="h-5 w-5 mr-1" />
-            <span>Torna all'itinerario</span>
-          </button>
-        </div>
-      </div>
-    )
+  // Zoom in
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.25, 3))
   }
 
-  // Desktop view
+  // Zoom out
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.25, 0.5))
+  }
+
+  // Rotate
+  const rotate = () => {
+    setRotation((prev) => (prev + 90) % 360)
+  }
+
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex flex-col">
       {/* Header */}
@@ -178,13 +124,6 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
           <button onClick={downloadPDF} className="p-2 rounded-full hover:bg-white/20" aria-label="Scarica PDF">
             <Download className="h-5 w-5" />
           </button>
-          <button
-            onClick={openInNewTab}
-            className="p-2 rounded-full hover:bg-white/20"
-            aria-label="Apri in nuova scheda"
-          >
-            <ExternalLink className="h-5 w-5" />
-          </button>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20" aria-label="Chiudi">
             <X className="h-5 w-5" />
           </button>
@@ -192,7 +131,7 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
       </div>
 
       {/* PDF Content */}
-      <div className="flex-1 bg-gray-100 overflow-hidden">
+      <div className="flex-1 bg-gray-100 overflow-auto">
         {loading && !loadError && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="flex flex-col items-center">
@@ -226,33 +165,60 @@ export function PDFViewer({ url, title, onClose }: PDFViewerProps) {
                 Il file PDF non è disponibile o si è verificato un errore durante il caricamento. Assicurati che il file
                 sia presente nella cartella /pdfs/.
               </p>
-              <div className="flex flex-col space-y-2">
-                <button
-                  onClick={openInNewTab}
-                  className="w-full px-4 py-2 bg-[#2a4d7f] text-white rounded-lg hover:bg-[#2a4d7f]/90 flex items-center justify-center"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Prova ad aprire in una nuova scheda
-                </button>
-                <button
-                  onClick={onClose}
-                  className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 flex items-center justify-center"
-                >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  Torna all'itinerario
-                </button>
-              </div>
+              <button
+                onClick={onClose}
+                className="w-full px-4 py-2 bg-[#2a4d7f] text-white rounded-lg hover:bg-[#2a4d7f]/90 flex items-center justify-center"
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Torna all'itinerario
+              </button>
             </div>
           </div>
         ) : (
-          <iframe
-            src={`${url}#toolbar=0&navpanes=0`}
-            className="w-full h-full"
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            title={title}
-          />
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              transform: `scale(${scale}) rotate(${rotation}deg)`,
+              transformOrigin: "center center",
+              transition: "transform 0.3s ease",
+            }}
+          >
+            <iframe
+              ref={iframeRef}
+              src={`${url}#toolbar=0&navpanes=0&view=FitH`}
+              className="w-full h-full"
+              onLoad={handleIframeLoad}
+              onError={handleIframeError}
+              title={title}
+              style={{ border: "none" }}
+            />
+          </div>
         )}
+      </div>
+
+      {/* Controls */}
+      <div className="bg-gray-200 p-2 flex justify-center items-center space-x-4">
+        <button
+          onClick={zoomOut}
+          className="p-2 rounded-full bg-white text-[#2a4d7f] hover:bg-gray-100"
+          aria-label="Zoom out"
+        >
+          <ZoomOut className="h-5 w-5" />
+        </button>
+        <button
+          onClick={zoomIn}
+          className="p-2 rounded-full bg-white text-[#2a4d7f] hover:bg-gray-100"
+          aria-label="Zoom in"
+        >
+          <ZoomIn className="h-5 w-5" />
+        </button>
+        <button
+          onClick={rotate}
+          className="p-2 rounded-full bg-white text-[#2a4d7f] hover:bg-gray-100"
+          aria-label="Rotate"
+        >
+          <RotateCw className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Bottom bar with back button */}

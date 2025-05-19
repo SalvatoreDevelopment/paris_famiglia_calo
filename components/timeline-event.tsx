@@ -41,7 +41,6 @@ export function TimelineEvent({
 }: TimelineEventProps) {
   const [expanded, setExpanded] = useState(false)
   const [showPDF, setShowPDF] = useState(false)
-  const [pdfError, setPdfError] = useState(false)
 
   // Function to open Google Maps with walking directions
   const openWalkingDirections = () => {
@@ -64,11 +63,9 @@ export function TimelineEvent({
     window.open("https://www.google.com/maps/search/metro+station+near+me", "_blank")
   }
 
-  // Function to handle voucher click - simplified to avoid fetch issues on mobile
+  // Function to handle voucher click
   const handleVoucherClick = () => {
     if (voucher?.url) {
-      // On mobile, we'll just show the PDF viewer directly
-      // without checking if the PDF exists first
       setShowPDF(true)
     }
   }
