@@ -11,7 +11,8 @@ import { Info } from "lucide-react"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")
-  const [showHelp, setShowHelp] = useState(true)
+  const [showHelp, setShowHelp] = useState(false) // Inizializzato a false, verrà aggiornato dopo il controllo in localStorage
+  const [helpLoaded, setHelpLoaded] = useState(false) // Flag per tracciare se abbiamo già controllato localStorage
   const [currentActivity, setCurrentActivity] = useState<{
     day: string
     time: string
@@ -20,6 +21,26 @@ export default function Home() {
 
   // Get day data once, not on every render - use useMemo to ensure it's stable
   const dayData = useMemo(() => getDayData(), [])
+
+  // Check localStorage for guide preference on component mount
+  useEffect(() => {
+    // Check if the user has already seen the guide
+    const hasSeenGuide = localStorage.getItem("parisTrip_hasSeenGuide")
+
+    // If the user hasn't seen the guide yet, show it
+    if (hasSeenGuide !== "true") {
+      setShowHelp(true)
+    }
+
+    // Mark as loaded so we don't flicker the UI
+    setHelpLoaded(true)
+  }, [])
+
+  // Handle hiding the guide and saving the preference
+  const handleHideGuide = () => {
+    setShowHelp(false)
+    localStorage.setItem("parisTrip_hasSeenGuide", "true")
+  }
 
   // Define getCurrentActivity as a memoized function to prevent recreating it on every render
   const getCurrentActivity = useCallback(() => {
@@ -119,6 +140,16 @@ export default function Home() {
   // Calculate top padding based on the presence of the current activity indicator
   const contentPaddingTop = "pt-28" // Always add padding for the activity indicator
 
+  // Add a button to show the guide again
+  const handleShowGuide = () => {
+    setShowHelp(true)
+  }
+
+  // Only render the main content after we've checked localStorage
+  if (!helpLoaded) {
+    return null // Or a loading spinner if you prefer
+  }
+
   return (
     <main className={`flex min-h-screen flex-col items-center bg-[#f5f0e6] ${contentPaddingTop}`}>
       {/* Current activity indicator (now shows next activity) */}
@@ -131,7 +162,7 @@ export default function Home() {
       </header>
 
       {/* Usage guide */}
-      {showHelp && (
+      {showHelp ? (
         <div className="w-full max-w-md px-4 mb-6">
           <div className="bg-[#2a4d7f]/10 border border-[#2a4d7f]/30 rounded-xl p-5">
             <div className="flex items-start mb-3">
@@ -172,12 +203,22 @@ export default function Home() {
             </ul>
 
             <button
-              onClick={() => setShowHelp(false)}
+              onClick={handleHideGuide}
               className="mt-4 w-full py-2 bg-[#2a4d7f] text-white rounded-lg font-medium hover:bg-[#2a4d7f]/90 transition-colors"
             >
               Ho capito, nascondi questa guida
             </button>
           </div>
+        </div>
+      ) : (
+        <div className="w-full max-w-md px-4 mb-6 flex justify-end">
+          <button
+            onClick={handleShowGuide}
+            className="flex items-center px-3 py-1.5 bg-[#2a4d7f]/10 text-[#2a4d7f] rounded-lg hover:bg-[#2a4d7f]/20 transition-colors text-sm"
+          >
+            <Info className="h-4 w-4 mr-1" />
+            <span>Mostra guida</span>
+          </button>
         </div>
       )}
 
