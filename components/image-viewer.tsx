@@ -15,6 +15,7 @@ export function ImageViewer({ images, title, pdfUrl, onClose }: ImageViewerProps
   const totalPages = images.length
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
+  const [imageError, setImageError] = useState(false)
 
   // Handle escape key to close the viewer
   useEffect(() => {
@@ -60,6 +61,7 @@ export function ImageViewer({ images, title, pdfUrl, onClose }: ImageViewerProps
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1)
+      setImageError(false)
     }
   }
 
@@ -67,7 +69,13 @@ export function ImageViewer({ images, title, pdfUrl, onClose }: ImageViewerProps
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1)
+      setImageError(false)
     }
+  }
+
+  // Gestione errore immagine
+  const handleImageError = () => {
+    setImageError(true)
   }
 
   return (
@@ -108,14 +116,34 @@ export function ImageViewer({ images, title, pdfUrl, onClose }: ImageViewerProps
             transition: "transform 0.3s ease",
           }}
         >
-          <img
-            src={images[currentPage - 1] || "/placeholder.svg"}
-            alt={`${title} - Pagina ${currentPage}`}
-            className="max-w-full max-h-full object-contain shadow-lg"
-          />
+          {imageError ? (
+            <div className="flex flex-col items-center justify-center bg-gray-200 p-8 rounded-lg">
+              <X className="h-16 w-16 text-red-500 mb-4" />
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Immagine non disponibile</h3>
+              <p className="text-gray-600 mb-4">
+                Non è stato possibile caricare l'immagine. Prova a scaricare il PDF originale.
+              </p>
+              {pdfUrl && (
+                <button
+                  onClick={downloadPDF}
+                  className="px-4 py-2 bg-[#2a4d7f] text-white rounded-lg flex items-center"
+                >
+                  <Download className="h-5 w-5 mr-2" />
+                  <span>Scarica PDF</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <img
+              src={images[currentPage - 1] || "/images/vouchers/fallback.png"}
+              alt={`${title} - Pagina ${currentPage}`}
+              className="max-w-full max-h-full object-contain shadow-lg"
+              onError={handleImageError}
+            />
+          )}
 
           {/* Pulsanti di navigazione pagina (solo se ci sono più pagine) */}
-          {totalPages > 1 && (
+          {totalPages > 1 && !imageError && (
             <>
               {currentPage > 1 && (
                 <button
