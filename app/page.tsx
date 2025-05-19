@@ -4,7 +4,7 @@ import { useState } from "react"
 import { DayCard } from "@/components/day-card"
 import { BottomNavbar } from "@/components/bottom-navbar"
 import { Notes } from "@/components/notes"
-import { getDayData } from "@/lib/day-data"
+import { getDayData } from "../lib/day-data"
 
 export default function Home() {
   const [activeDay, setActiveDay] = useState("all")

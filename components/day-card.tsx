@@ -6,7 +6,7 @@ type Event = {
   description: string
   voucher?: {
     text: string
-    url: string
+    url?: string
     imageUrl?: string
     title?: string
     details?: string
@@ -20,7 +20,6 @@ type DayCardProps = {
   date: string
   title: string
   events: Event[]
-  onOpenVoucher: (imageUrl: string, title: string) => void
 }
 
 export function DayCard({ id, date, title, events }: DayCardProps) {
