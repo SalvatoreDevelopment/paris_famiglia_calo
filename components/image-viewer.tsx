@@ -2,30 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { X, Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw } from "lucide-react"
-import dynamic from "next/dynamic"
 
-// Importa PDF.js solo lato client
-const PDFRenderer = dynamic(() => import("../lib/pdf-renderer").then((mod) => mod.PDFRenderer), {
-  ssr: false,
-  loading: () => (
-    <div className="flex flex-col items-center justify-center h-full">
-      <div className="w-12 h-12 border-4 border-[#2a4d7f] border-t-transparent rounded-full animate-spin"></div>
-      <p className="mt-4 text-[#2a4d7f] font-medium">Caricamento visualizzatore PDF...</p>
-    </div>
-  ),
-})
-
-type PDFImageViewerProps = {
-  url: string
+type ImageViewerProps = {
+  images: string[] // Array di URL delle immagini
   title: string
+  pdfUrl?: string // URL opzionale del PDF originale per il download
   onClose: () => void
 }
 
-export function PDFImageViewer({ url, title, onClose }: PDFImageViewerProps) {
+export function ImageViewer({ images, title, pdfUrl, onClose }: ImageViewerProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = images.length
   const [scale, setScale] = useState(1)
   const [rotation, setRotation] = useState(0)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
 
   // Handle escape key to close the viewer
   useEffect(() => {
@@ -39,15 +28,17 @@ export function PDFImageViewer({ url, title, onClose }: PDFImageViewerProps) {
     return () => window.removeEventListener("keydown", handleEscape)
   }, [onClose])
 
-  // Download PDF
+  // Download PDF if available
   const downloadPDF = () => {
-    const link = document.createElement("a")
-    link.href = url
-    link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
-    link.target = "_blank"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    if (pdfUrl) {
+      const link = document.createElement("a")
+      link.href = pdfUrl
+      link.download = title.replace(/\s+/g, "-").toLowerCase() + ".pdf"
+      link.target = "_blank"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   }
 
   // Zoom in
@@ -96,16 +87,18 @@ export function PDFImageViewer({ url, title, onClose }: PDFImageViewerProps) {
           </h2>
         </div>
         <div className="flex items-center space-x-2">
-          <button onClick={downloadPDF} className="p-2 rounded-full hover:bg-white/20" aria-label="Scarica PDF">
-            <Download className="h-5 w-5" />
-          </button>
+          {pdfUrl && (
+            <button onClick={downloadPDF} className="p-2 rounded-full hover:bg-white/20" aria-label="Scarica PDF">
+              <Download className="h-5 w-5" />
+            </button>
+          )}
           <button onClick={onClose} className="p-2 rounded-full hover:bg-white/20" aria-label="Chiudi">
             <X className="h-5 w-5" />
           </button>
         </div>
       </div>
 
-      {/* PDF Content as Images */}
+      {/* Image Content */}
       <div className="flex-1 bg-gray-100 overflow-auto flex items-center justify-center">
         <div
           className="relative flex items-center justify-center p-4 w-full h-full"
@@ -115,7 +108,11 @@ export function PDFImageViewer({ url, title, onClose }: PDFImageViewerProps) {
             transition: "transform 0.3s ease",
           }}
         >
-          <PDFRenderer url={url} currentPage={currentPage} onTotalPagesChange={setTotalPages} />
+          <img
+            src={images[currentPage - 1] || "/placeholder.svg"}
+            alt={`${title} - Pagina ${currentPage}`}
+            className="max-w-full max-h-full object-contain shadow-lg"
+          />
 
           {/* Pulsanti di navigazione pagina (solo se ci sono più pagine) */}
           {totalPages > 1 && (

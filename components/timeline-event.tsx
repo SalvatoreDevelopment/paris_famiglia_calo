@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { ChevronDown, ChevronUp, MapPin, Clock, ExternalLink, FileText, Map } from "lucide-react"
-import { PDFImageViewer } from "./pdf-image-viewer"
+import { ImageViewer } from "./image-viewer"
+import { getVoucherImages } from "../lib/voucher-images"
 
 type VoucherProps = {
   text?: string
@@ -40,7 +41,7 @@ export function TimelineEvent({
   isCurrentActivity = false,
 }: TimelineEventProps) {
   const [expanded, setExpanded] = useState(false)
-  const [showPDF, setShowPDF] = useState(false)
+  const [showImages, setShowImages] = useState(false)
 
   // Function to open Google Maps with walking directions
   const openWalkingDirections = () => {
@@ -66,7 +67,7 @@ export function TimelineEvent({
   // Function to handle voucher click
   const handleVoucherClick = () => {
     if (voucher?.url) {
-      setShowPDF(true)
+      setShowImages(true)
     }
   }
 
@@ -192,9 +193,14 @@ export function TimelineEvent({
         </div>
       </div>
 
-      {/* PDF Image Viewer */}
-      {showPDF && voucher?.url && (
-        <PDFImageViewer url={voucher.url} title={voucher.title || description} onClose={() => setShowPDF(false)} />
+      {/* Image Viewer */}
+      {showImages && voucher?.url && (
+        <ImageViewer
+          images={getVoucherImages(voucher.url)}
+          title={voucher.title || description}
+          pdfUrl={voucher.url}
+          onClose={() => setShowImages(false)}
+        />
       )}
     </div>
   )
