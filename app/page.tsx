@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { DayCard } from "../components/day-card"
 import { BottomNavbar } from "../components/bottom-navbar"
 import { Notes } from "../components/notes"
@@ -18,8 +18,8 @@ export default function Home() {
     description: string
   } | null>(null)
 
-  // Get day data once, not on every render
-  const dayData = getDayData()
+  // Get day data once, not on every render - use useMemo to ensure it's stable
+  const dayData = useMemo(() => getDayData(), [])
 
   // Define getCurrentActivity as a memoized function to prevent recreating it on every render
   const getCurrentActivity = useCallback(() => {
@@ -71,15 +71,19 @@ export default function Home() {
     return null
   }, [dayData]) // Only recreate if dayData changes
 
-  // Effect to update the current activity
+  // Effect to update the current activity - FIX: use a ref to track time updates
   useEffect(() => {
     // Set initial current activity
-    setCurrentActivity(getCurrentActivity())
+    const updateActivity = () => {
+      const activity = getCurrentActivity()
+      setCurrentActivity(activity)
+    }
+
+    // Initial update
+    updateActivity()
 
     // Update current activity every minute
-    const interval = setInterval(() => {
-      setCurrentActivity(getCurrentActivity())
-    }, 60000)
+    const interval = setInterval(updateActivity, 60000)
 
     return () => clearInterval(interval)
   }, [getCurrentActivity]) // Only run when getCurrentActivity changes

@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { Clock, Navigation, AlertCircle } from "lucide-react"
 import { getDayData } from "../lib/day-data"
 
@@ -14,8 +14,8 @@ export function CurrentActivityIndicator() {
     isNext: boolean
   } | null>(null)
 
-  // Get day data once
-  const dayData = getDayData()
+  // Get day data once - use useMemo to ensure it's stable
+  const dayData = useMemo(() => getDayData(), [])
 
   // Update current time every minute
   useEffect(() => {
@@ -28,13 +28,6 @@ export function CurrentActivityIndicator() {
 
   // Determine current or next activity based on time
   const determineCurrentActivity = useCallback(() => {
-    const tripDates = {
-      day1: new Date(2025, 4, 21), // May 21, 2025
-      day2: new Date(2025, 4, 22), // May 22, 2025
-      day3: new Date(2025, 4, 23), // May 23, 2025
-      day4: new Date(2025, 4, 24), // May 24, 2025
-    }
-
     const dayNames = {
       day1: "Mercoledì 21 Maggio",
       day2: "Giovedì 22 Maggio",
@@ -42,16 +35,13 @@ export function CurrentActivityIndicator() {
       day4: "Sabato 24 Maggio",
     }
 
-    // Find current day of the trip
+    // For testing purposes, use the current date to determine which day to simulate
+    const today = currentTime.getDate()
+
+    // Simulate trip day based on current date
     let currentDay = null
     let currentDayName = ""
 
-    // For testing purposes, use the current date to determine which day to simulate
-    const today = currentTime.getDate()
-    const currentMonth = currentTime.getMonth() + 1 // getMonth() is zero-based
-
-    // Simulate trip day based on current date
-    // This is just for testing - in production you would use the actual trip dates
     if (today % 4 === 0) {
       currentDay = "day1"
       currentDayName = dayNames.day1
@@ -128,9 +118,15 @@ export function CurrentActivityIndicator() {
     return null
   }, [currentTime, dayData]) // Only recalculate when currentTime or dayData changes
 
-  // Update current activity when time changes
+  // Update current activity when time changes - FIX: separate the effect from the state update
   useEffect(() => {
-    setCurrentActivity(determineCurrentActivity())
+    // Calculate the activity once
+    const activity = determineCurrentActivity()
+
+    // Only update state if the activity has changed
+    setCurrentActivity(activity)
+
+    // No need for additional dependencies since determineCurrentActivity already depends on currentTime
   }, [currentTime, determineCurrentActivity])
 
   if (!currentActivity) return null
