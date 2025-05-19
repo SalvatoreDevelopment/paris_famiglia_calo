@@ -1,8 +1,6 @@
 Questa cartella contiene i PDF dei voucher per il viaggio a Parigi.
 
 Inserisci qui i seguenti file PDF:
-- volo-andata.pdf (Volo Brindisi → Parigi Beauvais)
-- volo-ritorno.pdf (Volo Parigi Beauvais → Brindisi)
 - hotel-voucher.pdf (Prenotazione hotel Campanile Paris Bercy Village)
 - tour-misteri.pdf (Free Tour Misteri e Leggende di Parigi)
 - tour-montmartre.pdf (Free Tour Montmartre)

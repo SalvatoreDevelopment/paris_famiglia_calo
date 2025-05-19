@@ -3,7 +3,7 @@ type Event = {
   emoji: string
   description: string
   voucher?: {
-    text: string
+    text?: string
     url?: string
     imageUrl?: string
     title?: string
@@ -31,8 +31,6 @@ export function getDayData(): DayData {
         emoji: "✈️",
         description: "Partenza da Brindisi (BDS) con volo per Parigi Beauvais",
         voucher: {
-          text: "Apri PDF",
-          url: "/pdfs/volo-andata.pdf",
           title: "Volo Brindisi → Parigi Beauvais",
           details: "Ryanair FR123 • Posto: 15A, 15B, 15C",
         },
@@ -269,8 +267,6 @@ export function getDayData(): DayData {
         emoji: "✈️",
         description: "Volo di ritorno per Brindisi",
         voucher: {
-          text: "Apri PDF",
-          url: "/pdfs/volo-ritorno.pdf",
           title: "Volo Parigi Beauvais → Brindisi",
           details: "Ryanair FR456 • Posto: 15A, 15B, 15C",
         },
